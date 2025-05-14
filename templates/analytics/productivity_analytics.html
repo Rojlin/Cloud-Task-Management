@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Productivity Analytics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .analytics-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+    
+    .analytics-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .productivity-score {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        color: white;
+        font-weight: bold;
+        font-size: 1.2rem;
+        margin-right: 1rem;
+    }
+    
+    .score-low {
+        background-color: #dc3545;
+    }
+    
+    .score-medium {
+        background-color: #ffc107;
+    }
+    
+    .score-high {
+        background-color: #28a745;
+    }
+    
+    .user-productivity-item {
+        transition: all 0.3s ease;
+    }
+    
+    .user-productivity-item:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-4 mb-0">{{ page_title }}</h1>
+            <p class="text-muted">Analyze team member performance and workload management</p>
+            <hr>
+        </div>
+    </div>
+    
+    <!-- Productivity Summary -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Team Member Productivity</h5>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>User</th>
+                                <th>Role</th>
+                                <th>Assigned Tasks</th>
+                                <th>Completed Tasks</th>
+                                <th>Activity Score</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user_stat in user_stats %}
+                            <tr class="user-productivity-item">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if user_stat.user.userprofile.avatar %}
+                                        <img src="{{ user_stat.user.userprofile.avatar.url }}" alt="{{ user_stat.user.username }}" class="avatar-sm rounded-circle me-2">
+                                        {% else %}
+                                        <div class="avatar-sm bg-secondary rounded-circle text-white d-flex align-items-center justify-content-center me-2">
+                                            {{ user_stat.user.username.0|upper }}
+                                        </div>
+                                        {% endif %}
+                                        <div>
+                                            <div class="fw-bold">{{ user_stat.user.get_full_name|default:user_stat.user.username }}</div>
+                                            <small class="text-muted">{{ user_stat.user.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ user_stat.user.userprofile.get_role_display|default:"-" }}</td>
+                                <td>{{ user_stat.assigned_tasks }}</td>
+                                <td>{{ user_stat.completed_tasks }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="productivity-score {% if user_stat.activity_score < 30 %}score-low{% elif user_stat.activity_score < 70 %}score-medium{% else %}score-high{% endif %}">
+                                            {{ user_stat.activity_score }}%
+                                        </div>
+                                        <div class="progress flex-grow-1" style="height: 8px;">
+                                            <div class="progress-bar {% if user_stat.activity_score < 30 %}bg-danger{% elif user_stat.activity_score < 70 %}bg-warning{% else %}bg-success{% endif %}" role="progressbar" style="width: {{ user_stat.activity_score }}%" aria-valuenow="{{ user_stat.activity_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'analytics:user_productivity_detail' user_stat.user.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-chart-line me-1"></i> View Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <div class="text-muted">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        No productivity data available yet
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Performance Insights -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Performance Insights</h5>
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Analytics Insight:</strong> Performance is calculated based on the percentage of assigned tasks completed by each team member. Activity scores provide at-a-glance productivity metrics, with color-coding for quick assessment.
+                </div>
+                <div class="row mt-4">
+                    <div class="col-md-4">
+                        <div class="card mb-3 border-0 bg-light">
+                            <div class="card-body p-3">
+                                <h6 class="card-title"><i class="fas fa-trophy text-warning me-2"></i> High Performers</h6>
+                                <p class="card-text">Team members with 70% or higher activity scores demonstrate exceptional task completion rates.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-3 border-0 bg-light">
+                            <div class="card-body p-3">
+                                <h6 class="card-title"><i class="fas fa-sync-alt text-primary me-2"></i> Average Performers</h6>
+                                <p class="card-text">Team members with 30-70% activity scores are completing tasks at a moderate pace.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-3 border-0 bg-light">
+                            <div class="card-body p-3">
+                                <h6 class="card-title"><i class="fas fa-exclamation-triangle text-danger me-2"></i> Needs Improvement</h6>
+                                <p class="card-text">Team members with less than 30% activity scores may need additional support or guidance.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Analytics -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Related Analytics</h5>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'analytics:dashboard' %}" class="btn btn-outline-primary btn-lg w-100">
+                            <i class="fas fa-chart-bar me-2"></i> Main Dashboard
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'analytics:project_analytics' %}" class="btn btn-outline-success btn-lg w-100">
+                            <i class="fas fa-project-diagram me-2"></i> Project Analytics
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'analytics:task_analytics' %}" class="btn btn-outline-info btn-lg w-100">
+                            <i class="fas fa-tasks me-2"></i> Task Analytics
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'analytics:report_list' %}" class="btn btn-outline-secondary btn-lg w-100">
+                            <i class="fas fa-file-alt me-2"></i> Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+{% endblock %}

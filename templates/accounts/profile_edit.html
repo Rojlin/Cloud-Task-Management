@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile - Task Management{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'accounts:profile' %}" class="breadcrumb-link">Profile</a>
+</li>
+<li class="breadcrumb-item">
+    <span class="breadcrumb-link">Edit Profile</span>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Edit Profile</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.first_name.id_for_label }}" class="col-sm-3 col-form-label">First Name</label>
+                        <div class="col-sm-9">
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.first_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.last_name.id_for_label }}" class="col-sm-3 col-form-label">Last Name</label>
+                        <div class="col-sm-9">
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.last_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="col-sm-3 col-form-label">Email</label>
+                        <div class="col-sm-9">
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.role.id_for_label }}" class="col-sm-3 col-form-label">Role</label>
+                        <div class="col-sm-9">
+                            {{ form.role }}
+                            {% if form.role.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.role.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.avatar.id_for_label }}" class="col-sm-3 col-form-label">Avatar</label>
+                        <div class="col-sm-9">
+                            {% if form.instance.avatar %}
+                                <div class="mb-2">
+                                    <img src="{{ form.instance.avatar.url }}" alt="Current avatar" class="img-thumbnail" style="max-width: 150px;">
+                                </div>
+                            {% endif %}
+                            {{ form.avatar }}
+                            {% if form.avatar.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.avatar.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.bio.id_for_label }}" class="col-sm-3 col-form-label">Bio</label>
+                        <div class="col-sm-9">
+                            {{ form.bio }}
+                            {% if form.bio.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.bio.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">Tell us about yourself in a few sentences.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-sm-9 offset-sm-3">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                            <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block page_title %}Notifications{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+<li class="breadcrumb-item active">Notifications</li>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Your Notifications</h5>
+                    {% if notifications %}
+                    <a href="{% url 'notifications:mark_all_read' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-check-double"></i> Mark All as Read
+                    </a>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if notifications %}
+                        <div class="list-group">
+                            {% for notification in notifications %}
+                                <div class="list-group-item list-group-item-action {% if not notification.is_read %}list-group-item-light{% endif %}">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h5 class="mb-1">
+                                            {% if not notification.is_read %}
+                                                <span class="badge bg-primary me-2">New</span>
+                                            {% endif %}
+                                            {{ notification.title }}
+                                        </h5>
+                                        <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                    </div>
+                                    <p class="mb-1">{{ notification.message }}</p>
+                                    <div class="mt-2 d-flex justify-content-between">
+                                        <div>
+                                            {% if notification.link %}
+                                                <a href="{% url 'notifications:mark_read' notification.id %}" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-external-link-alt"></i> View
+                                                </a>
+                                            {% endif %}
+                                            {% if not notification.is_read %}
+                                                <a href="{% url 'notifications:mark_read' notification.id %}" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-check"></i> Mark as Read
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                        <form action="{% url 'notifications:delete' notification.id %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                        <nav aria-label="Page navigation" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page=1" aria-label="First">
+                                        <span aria-hidden="true">&laquo;&laquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                        <span aria-hidden="true">&laquo;</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                                
+                                {% for num in page_obj.paginator.page_range %}
+                                    {% if page_obj.number == num %}
+                                    <li class="page-item active"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                        <span aria-hidden="true">&raquo;</span>
+                                    </a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                        <span aria-hidden="true">&raquo;&raquo;</span>
+                                    </a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                        
+                    {% else %}
+                        <div class="text-center py-5">
+                            <div class="mb-3">
+                                <i class="fas fa-bell-slash fa-4x text-muted"></i>
+                            </div>
+                            <h4 class="text-muted">No Notifications</h4>
+                            <p class="text-muted">You don't have any notifications at the moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

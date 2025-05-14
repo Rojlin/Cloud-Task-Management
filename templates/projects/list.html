@@ -1,0 +1,320 @@
+{% extends 'base.html' %}
+
+{% block title %}Projects - Task Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .project-header {
+        background: url('https://pixabay.com/get/g921b49552a1dc5bd059571646d7cef8c3830aefd2f891f9cfa844bf1cb3a1957a42e755e02d949c8a1105e80f526bb6bc07918d6f4272227723466c81efa393a_1280.jpg');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        border-radius: var(--border-radius);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .project-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: var(--border-radius);
+    }
+    
+    /* Progress bar styles */
+    .progress-bar-low {
+        background: linear-gradient(to right, #4361ee, #4cc9f0);
+    }
+    
+    .progress-bar-medium {
+        background: linear-gradient(to right, #4361ee, #3a0ca3);
+    }
+    
+    .progress-bar-high {
+        background: linear-gradient(to right, #f72585, #7209b7);
+    }
+    
+    /* Percentage indicator styles */
+    .percent {
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 15px;
+        color: white;
+    }
+    
+    .percent-low {
+        background-color: #dc3545;
+    }
+    
+    .percent-medium {
+        background-color: #ffc107;
+        color: #343a40 !important;
+    }
+    
+    .percent-high {
+        background-color: #4361ee;
+    }
+    
+    .percent-complete {
+        background-color: #198754;
+    }
+    
+    .project-header-content {
+        position: relative;
+        z-index: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="project-header">
+    <div class="project-header-content">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Projects</h2>
+            {% if can_create_project %}
+            <a href="{% url 'projects:create' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Create Project
+            </a>
+            {% endif %}
+        </div>
+        <p>Manage all your projects in one place</p>
+    </div>
+</div>
+
+<!-- Project Stats -->
+<div class="stats-grid">
+    <div class="card">
+        <div class="stats-card">
+            <div class="stats-icon stats-icon-primary">
+                <i class="fas fa-project-diagram"></i>
+            </div>
+            <div class="stats-details">
+                <p class="stats-title">Total Projects</p>
+                <h3 class="stats-value">{{ total_projects }}</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="stats-card">
+            <div class="stats-icon stats-icon-success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stats-details">
+                <p class="stats-title">Completed</p>
+                <h3 class="stats-value">{{ completed_projects }}</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="stats-card">
+            <div class="stats-icon stats-icon-warning">
+                <i class="fas fa-hourglass-half"></i>
+            </div>
+            <div class="stats-details">
+                <p class="stats-title">Active</p>
+                <h3 class="stats-value">{{ active_projects }}</h3>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="stats-card">
+            <div class="stats-icon stats-icon-danger">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="stats-details">
+                <p class="stats-title">Overdue</p>
+                <h3 class="stats-value">{{ overdue_projects }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Projects Filter and List -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">Filter Projects</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="{{ filter_form.name.id_for_label }}" class="form-label">Project Name</label>
+                {{ filter_form.name }}
+            </div>
+            <div class="col-md-3">
+                <label for="{{ filter_form.status.id_for_label }}" class="form-label">Status</label>
+                {{ filter_form.status }}
+            </div>
+            <div class="col-md-3">
+                <label for="{{ filter_form.priority.id_for_label }}" class="form-label">Priority</label>
+                {{ filter_form.priority }}
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Progress</th>
+                        <th>Timeline</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in projects %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'projects:detail' project.id %}" class="fw-bold">{{ project.name }}</a>
+                            <div class="text-muted small">{{ project.description|truncatechars:60 }}</div>
+                        </td>
+                        <td>
+                            <span class="badge {% if project.status == 'completed' %}badge-success{% elif project.status == 'in_progress' %}badge-primary{% elif project.status == 'on_hold' %}badge-warning{% elif project.status == 'cancelled' %}badge-danger{% else %}badge-secondary{% endif %}">
+                                {{ project.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if project.priority == 'urgent' %}badge-danger{% elif project.priority == 'high' %}badge-warning{% elif project.priority == 'medium' %}badge-primary{% else %}badge-info{% endif %}">
+                                {{ project.get_priority_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="progress" style="height: 6px;">
+                                <div class="progress-bar {% if project.progress_percentage < 30 %}progress-bar-low{% elif project.progress_percentage < 70 %}progress-bar-medium{% else %}progress-bar-high{% endif %}" 
+                                     role="progressbar" 
+                                     style="width: {{ project.progress_percentage }}%;" 
+                                     aria-valuenow="{{ project.progress_percentage }}" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100">
+                                </div>
+                            </div>
+                            <span class="small percent {% if project.progress_percentage == 100 %}percent-complete{% elif project.progress_percentage >= 70 %}percent-high{% elif project.progress_percentage >= 30 %}percent-medium{% else %}percent-low{% endif %}" style="display: inline-block; margin-top: 4px;">
+                                {{ project.progress_percentage }}%
+                            </span>
+                        </td>
+                        <td>
+                            <small>
+                                Start: {{ project.start_date|date:"M d, Y" }}
+                                <br>
+                                End: {{ project.end_date|date:"M d, Y" }}
+                                <br>
+                                {% if project.is_overdue %}
+                                <span class="text-danger">Overdue</span>
+                                {% elif not project.is_completed %}
+                                {{ project.days_left }} days left
+                                {% else %}
+                                Completed
+                                {% endif %}
+                            </small>
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <a href="{% url 'projects:detail' project.id %}" class="btn btn-sm btn-info" data-toggle="tooltip" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'tasks:project_kanban' project.id %}" class="btn btn-sm btn-secondary" data-toggle="tooltip" title="Kanban Board">
+                                    <i class="fas fa-columns"></i>
+                                </a>
+                                <a href="{% url 'projects:edit' project.id %}" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Edit Project">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'projects:delete' project.id %}" class="btn btn-sm btn-danger" data-toggle="tooltip" title="Delete Project">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">
+                            <p class="my-5">No projects found. 
+                            {% if can_create_project %}
+                                <a href="{% url 'projects:create' %}">Create your first project</a>.
+                            {% else %}
+                                Please contact a project manager or admin to create a project.
+                            {% endif %}
+                            </p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if request.GET.name %}name={{ request.GET.name }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?{% if request.GET.name %}name={{ request.GET.name }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;&laquo;</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;</span>
+                </li>
+                {% endif %}
+                
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% if request.GET.name %}name={{ request.GET.name }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}page={{ num }}">{{ num }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?{% if request.GET.name %}name={{ request.GET.name }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?{% if request.GET.name %}name={{ request.GET.name }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}&{% endif %}{% if request.GET.priority %}priority={{ request.GET.priority }}&{% endif %}page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;&raquo;</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

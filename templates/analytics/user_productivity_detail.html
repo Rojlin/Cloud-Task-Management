@@ -1,0 +1,412 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}User Productivity Details{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .analytics-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+    
+    .analytics-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stats-item {
+        padding: 15px;
+        border-radius: 8px;
+        background-color: #f8f9fa;
+        height: 100%;
+    }
+    
+    .stats-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+    
+    .stats-number {
+        font-size: 1.8rem;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+    
+    .stats-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .chart-container {
+        height: 300px;
+        width: 100%;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'analytics:dashboard' %}">Analytics</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'analytics:productivity_analytics' %}">Productivity</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ user.get_full_name|default:user.username }}</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h1 class="display-4 mb-0">User Productivity Analysis</h1>
+                <div>
+                    <a href="{% url 'analytics:productivity_analytics' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i> Back to Productivity
+                    </a>
+                </div>
+            </div>
+            
+            <p class="text-muted">Detailed productivity metrics for {{ user.get_full_name|default:user.username }}</p>
+            <hr>
+        </div>
+    </div>
+    
+    <!-- User Profile & Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="analytics-card bg-white p-4">
+                <div class="d-flex align-items-center mb-4">
+                    {% if user.userprofile.avatar %}
+                    <img src="{{ user.userprofile.avatar.url }}" alt="{{ user.username }}" class="rounded-circle me-3" style="width: 80px; height: 80px; object-fit: cover;">
+                    {% else %}
+                    <div class="rounded-circle bg-secondary text-white me-3 d-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                        {{ user.username.0|upper }}
+                    </div>
+                    {% endif %}
+                    
+                    <div>
+                        <h4 class="mb-1">{{ user.get_full_name|default:user.username }}</h4>
+                        <p class="text-muted mb-0">{{ user.userprofile.get_role_display }}</p>
+                        <div class="mb-0">
+                            <small class="text-muted">{{ user.email }}</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-top pt-3">
+                    <h6 class="mb-3">User Bio</h6>
+                    <p>{{ user.userprofile.bio|default:"No bio available." }}</p>
+                </div>
+                
+                <div class="border-top pt-3">
+                    <h6 class="mb-3">Productivity Trend</h6>
+                    
+                    {% if productivity_records %}
+                    <div class="chart-container" style="height: 200px;">
+                        <canvas id="userProductivityTrend"></canvas>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No productivity trend data available for this user.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="analytics-card bg-white p-3">
+                        <div class="d-flex">
+                            <div class="stats-icon bg-primary-soft text-primary">
+                                <i class="fas fa-clipboard-list fa-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="stats-number">{{ total_tasks }}</h2>
+                                <p class="stats-label mb-0">Total Tasks</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="analytics-card bg-white p-3">
+                        <div class="d-flex">
+                            <div class="stats-icon bg-success-soft text-success">
+                                <i class="fas fa-check-circle fa-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="stats-number">{{ completed_tasks }}</h2>
+                                <p class="stats-label mb-0">Completed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <div class="analytics-card bg-white p-3">
+                        <div class="d-flex">
+                            <div class="stats-icon bg-danger-soft text-danger">
+                                <i class="fas fa-exclamation-triangle fa-lg"></i>
+                            </div>
+                            <div>
+                                <h2 class="stats-number">{{ overdue_tasks }}</h2>
+                                <p class="stats-label mb-0">Overdue</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="analytics-card bg-white p-4 h-100">
+                        <h5 class="card-title mb-3">Completion Rate</h5>
+                        <div class="text-center py-4">
+                            <div class="position-relative d-inline-block">
+                                <canvas id="completionRateChart" width="160" height="160"></canvas>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <h3 class="mb-0">{{ completion_rate|default:"0" }}%</h3>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <p class="text-muted mb-0">{{ completed_tasks }} of {{ total_tasks }} tasks completed</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="analytics-card bg-white p-4 h-100">
+                        <h5 class="card-title mb-3">Project Participation</h5>
+                        {% if projects_count > 0 %}
+                        <div class="chart-container" style="height: 200px;">
+                            <canvas id="projectParticipationChart"></canvas>
+                        </div>
+                        <div class="mt-2 text-center">
+                            <p class="text-muted mb-0">Involved in {{ projects_count }} project{{ projects_count|pluralize }}</p>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info mb-0 h-100 d-flex align-items-center justify-content-center">
+                            <div class="text-center">
+                                <i class="fas fa-info-circle fa-2x mb-3"></i>
+                                <p class="mb-0">No project participation data available.</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Task Completion Analysis -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Task Completion Trend (Last 30 Days)</h5>
+                
+                {% if completion_trend %}
+                <div class="chart-container">
+                    <canvas id="taskCompletionTrendChart"></canvas>
+                </div>
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    This chart shows the number of tasks completed by {{ user.get_full_name|default:user.username }} on each day during the last 30 days. Higher bars indicate more tasks completed on those days.
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No task completion data available for the last 30 days.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Completion Rate Chart
+    const completionRate = {{ completion_rate|default:"0" }};
+    const completionRateCtx = document.getElementById('completionRateChart').getContext('2d');
+    new Chart(completionRateCtx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [completionRate, 100 - completionRate],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.7)',  // green
+                    'rgba(233, 236, 239, 0.5)'  // light gray
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            cutout: '75%',
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: false
+                }
+            }
+        }
+    });
+    
+    // Task Completion Trend Chart
+    {% if completion_trend %}
+    const trendCtx = document.getElementById('taskCompletionTrendChart').getContext('2d');
+    new Chart(trendCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for item in completion_trend %}
+                "{{ item.day|date:'M d' }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Tasks Completed',
+                data: [
+                    {% for item in completion_trend %}
+                    {{ item.count }},
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    },
+                    title: {
+                        display: true,
+                        text: 'Number of Tasks'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return 'Date: ' + tooltipItems[0].label;
+                        },
+                        label: function(context) {
+                            return 'Completed: ' + context.raw + ' tasks';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+    
+    // Project Participation Chart
+    {% if projects_count > 0 %}
+    const projectCtx = document.getElementById('projectParticipationChart').getContext('2d');
+    new Chart(projectCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Active Projects'],
+            datasets: [{
+                data: [{{ projects_count }}],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.7)',
+                    'rgba(54, 162, 235, 0.7)',
+                    'rgba(255, 206, 86, 0.7)',
+                    'rgba(75, 192, 192, 0.7)',
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    {% endif %}
+    
+    // User Productivity Trend Chart
+    {% if productivity_records %}
+    const productivityCtx = document.getElementById('userProductivityTrend').getContext('2d');
+    new Chart(productivityCtx, {
+        type: 'line',
+        data: {
+            labels: [
+                {% for record in productivity_records %}
+                "{{ record.date|date:'M d' }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Activity Score',
+                data: [
+                    {% for record in productivity_records %}
+                    {{ record.activity_score }},
+                    {% endfor %}
+                ],
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'Activity Score (%)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
+                }
+            }
+        }
+    });
+    {% endif %}
+});
+</script>
+{% endblock %}

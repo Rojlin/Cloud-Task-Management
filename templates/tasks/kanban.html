@@ -1,0 +1,576 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .kanban-column {
+        min-height: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+    
+    .task-card {
+        cursor: grab;
+        margin-bottom: 10px;
+    }
+    
+    .task-card:active {
+        cursor: grabbing;
+    }
+    
+    .task-card .card-header {
+        padding: 0.4rem 1rem;
+    }
+    
+    .border-left-todo {
+        border-left: 5px solid #ffc107;
+    }
+    
+    .border-left-progress {
+        border-left: 5px solid #007bff;
+    }
+    
+    .border-left-review {
+        border-left: 5px solid #6f42c1;
+    }
+    
+    .border-left-done {
+        border-left: 5px solid #28a745;
+    }
+    
+    .task-priority-low {
+        border-top: 3px solid #28a745;
+    }
+    
+    .task-priority-medium {
+        border-top: 3px solid #17a2b8;
+    }
+    
+    .task-priority-high {
+        border-top: 3px solid #ffc107;
+    }
+    
+    .task-priority-urgent {
+        border-top: 3px solid #dc3545;
+    }
+    
+    .task-overdue {
+        background-color: rgba(255, 193, 7, 0.1);
+    }
+    
+    .task-actions {
+        display: none;
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+    
+    .task-card:hover .task-actions {
+        display: block;
+    }
+    
+    .column-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background-color: #f8f9fa;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center my-4">
+        <h1>{{ title }}</h1>
+        <div>
+            <a href="{% url 'tasks:create' %}" class="btn btn-success">
+                <i class="bi bi-plus-lg"></i> Add Task
+            </a>
+            {% if project %}
+            <a href="{% url 'projects:detail' project.id %}" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Back to Project
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- To Do Column -->
+        <div class="col-md-3">
+            <div class="card shadow-sm kanban-column" id="todo-column">
+                <div class="card-header column-header bg-warning bg-opacity-25">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        <span>To Do</span>
+                        <span class="badge bg-warning text-dark">{{ todo_tasks.count }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-2 todo-tasks">
+                    {% for task in todo_tasks %}
+                    <div class="card shadow-sm task-card border-left-todo task-priority-{{ task.priority }}" data-task-id="{{ task.id }}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">#{{ task.id }}</small>
+                            </div>
+                            <span class="badge bg-{{ task.priority|yesno:'danger,info,success,warning' }}">
+                                {{ task.get_priority_display }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">{{ task.title }}</h6>
+                            <small class="text-muted d-block">
+                                Project: {{ task.project.name }}
+                            </small>
+                            {% if task.is_overdue %}
+                            <div class="text-danger">Overdue: {{ task.due_date|date:"M d, Y" }}</div>
+                            {% else %}
+                            <div>Due: {{ task.due_date|date:"M d, Y" }}</div>
+                            {% endif %}
+                            
+                            {% if task.assigned_to %}
+                            <div class="mt-2">
+                                <small class="text-muted">Assigned to:</small>
+                                <span class="badge bg-secondary">{{ task.assigned_to.username }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="task-actions">
+                                <div class="btn-group">
+                                    <a href="{% url 'tasks:detail' task.id %}" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'tasks:status_update' task.id 'in_progress' %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">No tasks in this column</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- In Progress Column -->
+        <div class="col-md-3">
+            <div class="card shadow-sm kanban-column" id="in-progress-column">
+                <div class="card-header column-header bg-primary bg-opacity-25">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        <span>In Progress</span>
+                        <span class="badge bg-primary">{{ in_progress_tasks.count }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-2 in-progress-tasks">
+                    {% for task in in_progress_tasks %}
+                    <div class="card shadow-sm task-card border-left-progress task-priority-{{ task.priority }}" data-task-id="{{ task.id }}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">#{{ task.id }}</small>
+                            </div>
+                            <span class="badge bg-{{ task.priority|yesno:'danger,info,success,warning' }}">
+                                {{ task.get_priority_display }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">{{ task.title }}</h6>
+                            <small class="text-muted d-block">
+                                Project: {{ task.project.name }}
+                            </small>
+                            {% if task.is_overdue %}
+                            <div class="text-danger">Overdue: {{ task.due_date|date:"M d, Y" }}</div>
+                            {% else %}
+                            <div>Due: {{ task.due_date|date:"M d, Y" }}</div>
+                            {% endif %}
+                            
+                            {% if task.assigned_to %}
+                            <div class="mt-2">
+                                <small class="text-muted">Assigned to:</small>
+                                <span class="badge bg-secondary">{{ task.assigned_to.username }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="task-actions">
+                                <div class="btn-group">
+                                    <a href="{% url 'tasks:status_update' task.id 'todo' %}" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-arrow-left"></i>
+                                    </a>
+                                    <a href="{% url 'tasks:detail' task.id %}" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'tasks:status_update' task.id 'review' %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">No tasks in this column</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Review Column -->
+        <div class="col-md-3">
+            <div class="card shadow-sm kanban-column" id="review-column">
+                <div class="card-header column-header bg-secondary bg-opacity-25">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        <span>In Review</span>
+                        <span class="badge bg-secondary">{{ review_tasks.count }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-2 review-tasks">
+                    {% for task in review_tasks %}
+                    <div class="card shadow-sm task-card border-left-review task-priority-{{ task.priority }}" data-task-id="{{ task.id }}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">#{{ task.id }}</small>
+                            </div>
+                            <span class="badge bg-{{ task.priority|yesno:'danger,info,success,warning' }}">
+                                {{ task.get_priority_display }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">{{ task.title }}</h6>
+                            <small class="text-muted d-block">
+                                Project: {{ task.project.name }}
+                            </small>
+                            {% if task.is_overdue %}
+                            <div class="text-danger">Overdue: {{ task.due_date|date:"M d, Y" }}</div>
+                            {% else %}
+                            <div>Due: {{ task.due_date|date:"M d, Y" }}</div>
+                            {% endif %}
+                            
+                            {% if task.assigned_to %}
+                            <div class="mt-2">
+                                <small class="text-muted">Assigned to:</small>
+                                <span class="badge bg-secondary">{{ task.assigned_to.username }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="task-actions">
+                                <div class="btn-group">
+                                    <a href="{% url 'tasks:status_update' task.id 'in_progress' %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-arrow-left"></i>
+                                    </a>
+                                    <a href="{% url 'tasks:detail' task.id %}" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="{% url 'tasks:status_update' task.id 'completed' %}" class="btn btn-sm btn-outline-success">
+                                        <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">No tasks in this column</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Completed Column -->
+        <div class="col-md-3">
+            <div class="card shadow-sm kanban-column" id="completed-column">
+                <div class="card-header column-header bg-success bg-opacity-25">
+                    <h5 class="mb-0 d-flex justify-content-between align-items-center">
+                        <span>Completed</span>
+                        <span class="badge bg-success">{{ completed_tasks.count }}</span>
+                    </h5>
+                </div>
+                <div class="card-body p-2 completed-tasks">
+                    {% for task in completed_tasks %}
+                    <div class="card shadow-sm task-card border-left-done task-priority-{{ task.priority }}" data-task-id="{{ task.id }}">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <small class="text-muted">#{{ task.id }}</small>
+                            </div>
+                            <span class="badge bg-{{ task.priority|yesno:'danger,info,success,warning' }}">
+                                {{ task.get_priority_display }}
+                            </span>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title">{{ task.title }}</h6>
+                            <small class="text-muted d-block">
+                                Project: {{ task.project.name }}
+                            </small>
+                            <div>Completed: {{ task.completed_at|date:"M d, Y" }}</div>
+                            
+                            {% if task.assigned_to %}
+                            <div class="mt-2">
+                                <small class="text-muted">Assigned to:</small>
+                                <span class="badge bg-secondary">{{ task.assigned_to.username }}</span>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="task-actions">
+                                <div class="btn-group">
+                                    <a href="{% url 'tasks:status_update' task.id 'review' %}" class="btn btn-sm btn-outline-secondary">
+                                        <i class="bi bi-arrow-left"></i>
+                                    </a>
+                                    <a href="{% url 'tasks:detail' task.id %}" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-inbox fs-1"></i>
+                        <p class="mt-2">No tasks in this column</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- SortableJS for drag and drop functionality -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    // Global variable to store WebSocket connection
+    let taskSocket;
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize drag and drop with SortableJS
+        initDragAndDrop();
+        
+        // Listen for real-time updates from WebSocket
+        setupKanbanWebSocket();
+    });
+    
+    function initDragAndDrop() {
+        // Initialize SortableJS for each column
+        const columns = ['todo', 'in_progress', 'review', 'completed'];
+        const taskGroups = {};
+        
+        columns.forEach(status => {
+            const columnSelector = status === 'todo' ? '.todo-tasks' : 
+                                  status === 'in_progress' ? '.in-progress-tasks' : 
+                                  status === 'review' ? '.review-tasks' : 
+                                  '.completed-tasks';
+            
+            const columnEl = document.querySelector(columnSelector);
+            if (!columnEl) return;
+            
+            taskGroups[status] = new Sortable(columnEl, {
+                group: 'tasks',
+                animation: 150,
+                easing: 'cubic-bezier(1, 0, 0, 1)',
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                dragClass: 'sortable-drag',
+                filter: '.task-actions', // Don't start drag on task action buttons
+                preventOnFilter: true,
+                onEnd: function(evt) {
+                    const taskId = evt.item.getAttribute('data-task-id');
+                    const newStatus = getColumnStatus(evt.to);
+                    
+                    if (taskId && newStatus) {
+                        updateTaskStatus(taskId, newStatus);
+                    }
+                }
+            });
+        });
+    }
+    
+    function getColumnStatus(columnElement) {
+        if (columnElement.classList.contains('todo-tasks')) return 'todo';
+        if (columnElement.classList.contains('in-progress-tasks')) return 'in_progress';
+        if (columnElement.classList.contains('review-tasks')) return 'review';
+        if (columnElement.classList.contains('completed-tasks')) return 'completed';
+        return null;
+    }
+    
+    function updateTaskStatus(taskId, newStatus) {
+        // Update task status via WebSocket
+        if (taskSocket && taskSocket.readyState === WebSocket.OPEN) {
+            taskSocket.send(JSON.stringify({
+                'type': 'task_update',
+                'task_id': taskId,
+                'status': newStatus
+            }));
+        } else {
+            // If WebSocket is not connected, use AJAX as fallback
+            fetch(`/tasks/api/update_status/${taskId}/${newStatus}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Update task card styles
+                    updateTaskCardStyles(taskId, newStatus);
+                } else {
+                    // If update fails, reload to get the current state
+                    window.location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error updating task status:', error);
+                window.location.reload();
+            });
+        }
+    }
+    
+    function setupKanbanWebSocket() {
+        // WebSocket connection for real-time task updates
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}/ws/tasks/kanban/`;
+        
+        taskSocket = new WebSocket(wsUrl);
+        
+        taskSocket.onopen = function(e) {
+            console.log('Kanban WebSocket connection established');
+        };
+        
+        taskSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            if (data.type === 'task_update') {
+                // Handle task update
+                updateTaskCardStyles(data.task_id, data.status);
+                
+                // Show notification of who updated the task
+                if (data.updated_by) {
+                    showTaskUpdateNotification(data.task_id, data.status, data.updated_by);
+                }
+            }
+        };
+        
+        taskSocket.onclose = function(e) {
+            console.log('Kanban WebSocket connection closed');
+            // Try to reconnect after a few seconds
+            setTimeout(setupKanbanWebSocket, 5000);
+        };
+        
+        taskSocket.onerror = function(e) {
+            console.error('Kanban WebSocket error:', e);
+        };
+    }
+    
+    function updateTaskCardStyles(taskId, newStatus) {
+        // Find the task card if it exists
+        const taskCard = document.querySelector(`.task-card[data-task-id="${taskId}"]`);
+        if (!taskCard) return;
+        
+        // Get target column
+        const targetColumnSelector = newStatus === 'todo' ? '.todo-tasks' : 
+                                    newStatus === 'in_progress' ? '.in-progress-tasks' : 
+                                    newStatus === 'review' ? '.review-tasks' : 
+                                    '.completed-tasks';
+        const targetColumn = document.querySelector(targetColumnSelector);
+        
+        if (!targetColumn) return;
+        
+        // Move the card to the appropriate column if not already there
+        if (taskCard.parentElement !== targetColumn) {
+            targetColumn.appendChild(taskCard);
+        }
+        
+        // Update task card class based on new status
+        taskCard.classList.remove('border-left-todo', 'border-left-progress', 'border-left-review', 'border-left-done');
+        
+        switch(newStatus) {
+            case 'todo':
+                taskCard.classList.add('border-left-todo');
+                break;
+            case 'in_progress':
+                taskCard.classList.add('border-left-progress');
+                break;
+            case 'review':
+                taskCard.classList.add('border-left-review');
+                break;
+            case 'completed':
+                taskCard.classList.add('border-left-done');
+                break;
+        }
+        
+        // Update action buttons if needed
+        updateTaskCardActionButtons(taskCard, newStatus);
+    }
+    
+    function updateTaskCardActionButtons(taskCard, newStatus) {
+        // This function would update the action buttons based on new status
+        // For simplicity, we'll just reload the page if a refresh is needed
+        // A full implementation would dynamically update the action buttons
+        
+        // For now, we'll leave this as a placeholder
+    }
+    
+    function showTaskUpdateNotification(taskId, newStatus, updatedBy) {
+        const statusDisplay = newStatus === 'todo' ? 'To Do' : 
+                            newStatus === 'in_progress' ? 'In Progress' : 
+                            newStatus === 'review' ? 'In Review' : 
+                            'Completed';
+        
+        // Create a toast notification
+        const toast = document.createElement('div');
+        toast.className = 'toast show';
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        toast.setAttribute('aria-atomic', 'true');
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.right = '20px';
+        toast.style.minWidth = '300px';
+        toast.style.zIndex = '1050';
+        
+        toast.innerHTML = `
+            <div class="toast-header">
+                <strong class="me-auto">Task Update</strong>
+                <small>Just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                <b>${updatedBy}</b> moved task #${taskId} to <b>${statusDisplay}</b>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto-remove toast after 5 seconds
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 500);
+        }, 5000);
+    }
+    
+    // Helper function to get CSRF token from cookies
+    function getCookie(name) {
+        if (!document.cookie) return null;
+        
+        const cookies = document.cookie.split(';')
+            .map(c => c.trim())
+            .filter(c => c.startsWith(name + '='));
+            
+        if (cookies.length === 0) return null;
+        return decodeURIComponent(cookies[0].split('=')[1]);
+    }
+</script>
+{% endblock %}

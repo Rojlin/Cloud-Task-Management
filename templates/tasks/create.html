@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Task | Task Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="row">
+    <div class="col-lg-8 offset-lg-2">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h5 class="card-title mb-0">Create New Task</h5>
+        </div>
+        <div class="card-body">
+          <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger">
+              {% for error in form.non_field_errors %}
+                {{ error }}
+              {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Project Field -->
+            <div class="form-group mb-3">
+              <label for="{{ form.project.id_for_label }}">Project</label>
+              {{ form.project }}
+              {% if form.project.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.project.errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+              {% endif %}
+              <small class="form-text text-muted">Select the project this task belongs to</small>
+            </div>
+
+            <!-- Title Field -->
+            <div class="form-group mb-3">
+              <label for="{{ form.title.id_for_label }}">Title</label>
+              {{ form.title }}
+              {% if form.title.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.title.errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+              {% endif %}
+              <small class="form-text text-muted">Enter a descriptive title for the task</small>
+            </div>
+
+            <!-- Description Field -->
+            <div class="form-group mb-3">
+              <label for="{{ form.description.id_for_label }}">Description</label>
+              {{ form.description }}
+              {% if form.description.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.description.errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+              {% endif %}
+              <small class="form-text text-muted">Provide a detailed description of the task</small>
+            </div>
+
+            <!-- Status Field -->
+            <div class="form-group mb-3">
+              <label for="{{ form.status.id_for_label }}">Status</label>
+              {{ form.status }}
+              {% if form.status.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.status.errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Priority Field -->
+            <div class="form-group mb-3">
+              <label for="{{ form.priority.id_for_label }}">Priority</label>
+              {{ form.priority }}
+              {% if form.priority.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.priority.errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+              {% endif %}
+            </div>
+
+            <!-- Due Date Field -->
+            <div class="form-group mb-3">
+              <label for="{{ form.due_date.id_for_label }}">Due Date</label>
+              {{ form.due_date }}
+              {% if form.due_date.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.due_date.errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+              {% endif %}
+              <small class="form-text text-muted">When should this task be completed?</small>
+            </div>
+
+            <!-- Assigned To Field -->
+            <div class="form-group mb-3">
+              <label for="{{ form.assigned_to.id_for_label }}">Assigned To</label>
+              {{ form.assigned_to }}
+              {% if form.assigned_to.errors %}
+              <div class="invalid-feedback d-block">
+                {% for error in form.assigned_to.errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+              {% endif %}
+              <small class="form-text text-muted">Who is responsible for this task?</small>
+            </div>
+
+            <!-- Note: Attachments can be added after task creation -->
+            <div class="alert alert-info mb-3">
+              <i class="fas fa-info-circle"></i> You can add attachments after saving the task.
+            </div>
+
+            <!-- Submit Button -->
+            <div class="form-group mt-4">
+              <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save mr-1"></i> Save Task
+              </button>
+              <a href="{% url 'tasks:list' %}" class="btn btn-secondary ml-2">
+                <i class="fas fa-times mr-1"></i> Cancel
+              </a>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize datepicker for due date field
+    if ($.fn.datepicker) {
+      $('#{{ form.due_date.id_for_label }}').datepicker({
+        format: 'yyyy-mm-dd',
+        autoclose: true,
+        todayHighlight: true
+      });
+    }
+    
+    // Initialize select2 for dropdown fields
+    if ($.fn.select2) {
+      $('#{{ form.project.id_for_label }}').select2({
+        placeholder: 'Select a project',
+        width: '100%'
+      });
+      
+      $('#{{ form.assigned_to.id_for_label }}').select2({
+        placeholder: 'Select a team member',
+        width: '100%'
+      });
+      
+      // Tags functionality will be added in a future update
+    }
+
+    // Auto-populate project if provided in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const projectId = urlParams.get('project');
+    
+    if (projectId) {
+      const projectSelect = document.getElementById('{{ form.project.id_for_label }}');
+      if (projectSelect) {
+        projectSelect.value = projectId;
+        
+        // Trigger change event for Select2
+        if ($.fn.select2) {
+          $(projectSelect).trigger('change');
+        }
+        
+        // Make an AJAX call to get project members
+        fetch(`/projects/api/${projectId}/members/`)
+          .then(response => response.json())
+          .then(data => {
+            const assignedToSelect = document.getElementById('{{ form.assigned_to.id_for_label }}');
+            
+            // Remove existing options except the first one (empty option)
+            while (assignedToSelect.options.length > 1) {
+              assignedToSelect.remove(1);
+            }
+            
+            // Add project members as options
+            data.members.forEach(member => {
+              const option = document.createElement('option');
+              option.value = member.id;
+              option.text = member.name;
+              assignedToSelect.add(option);
+            });
+            
+            // Refresh Select2
+            if ($.fn.select2) {
+              $(assignedToSelect).trigger('change');
+            }
+          })
+          .catch(error => {
+            console.error('Error fetching project members:', error);
+          });
+      }
+    }
+  });
+</script>
+{% endblock %}

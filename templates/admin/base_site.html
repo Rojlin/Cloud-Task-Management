@@ -1,0 +1,155 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('CollaboraSync Admin') }}{% endblock %}
+
+{% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="{% static 'css/admin.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    /* Custom style for the admin navbar */
+    #header {
+        background: #2c3e50;
+        color: white;
+        padding: 15px;
+    }
+    
+    #branding h1 {
+        font-size: 1.5rem;
+    }
+    
+    #branding h1 a {
+        color: white;
+        display: flex;
+        align-items: center;
+    }
+    
+    .header-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .header-links a {
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .header-links a:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+    
+    /* Improve admin welcome section */
+    .welcome-message {
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        padding: 20px 25px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+    }
+    
+    .welcome-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .welcome-actions a {
+        padding: 8px 15px;
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 4px;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .welcome-actions a:hover {
+        background: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* App modules styling */
+    .app-item {
+        background: white;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .app-item h2 {
+        background: #2c3e50;
+        color: white;
+        padding: 12px 15px;
+        margin: 0;
+        border-radius: 6px 6px 0 0;
+    }
+    
+    .app-item h2 a {
+        color: white;
+    }
+    
+    /* Enhanced responsive admin */
+    @media (max-width: 768px) {
+        .header-links {
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .welcome-actions {
+            flex-direction: column;
+            gap: 5px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">
+        <i class="bi bi-gear-fill me-2"></i>
+        {{ site_header|default:_('CollaboraSync Admin') }}
+    </a>
+</h1>
+{% endblock %}
+
+{% block nav-global %}
+<div class="header-links">
+    <a href="/dashboard/">
+        <i class="bi bi-house-door"></i> Dashboard
+    </a>
+    
+
+    
+    <a href="/accounts/users/">
+        <i class="bi bi-people"></i> User Management
+    </a>
+    
+    <a href="/notifications/">
+        <i class="bi bi-bell"></i> Notifications
+    </a>
+    
+    <a href="/tasks/">
+        <i class="bi bi-list-check"></i> Tasks
+    </a>
+    
+    <a href="/projects/">
+        <i class="bi bi-kanban"></i> Projects
+    </a>
+    
+    <a href="/admin/accounts/user/">
+        <i class="bi bi-person-gear"></i> Manage Users
+    </a>
+</div>
+{% endblock %}

@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Members to {{ chat_room.name }} - Task Management{% endblock %}
+{% block page_title %}Add Members to Chat Room{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'dashboard:index' %}" class="breadcrumb-link">Dashboard</a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'chat:list' %}" class="breadcrumb-link">Chat Rooms</a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'chat:detail' chat_room.id %}" class="breadcrumb-link">{{ chat_room.name }}</a>
+</li>
+<li class="breadcrumb-item">
+    <span class="breadcrumb-link">Add Members</span>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 col-lg-6 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Add Members to {{ chat_room.name }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6 class="mb-3">Current Members ({{ chat_room.members.count }})</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for member in chat_room.members.all %}
+                        <div class="d-flex align-items-center bg-light p-2 rounded">
+                            {% if member.userprofile.avatar %}
+                            <img src="{{ member.userprofile.avatar.url }}" alt="{{ member.username }}" class="avatar me-2" style="width: 24px; height: 24px;">
+                            {% else %}
+                            <div class="avatar d-flex align-items-center justify-content-center bg-primary text-white me-2" style="width: 24px; height: 24px; font-size: 0.75rem;">
+                                {{ member.username|first|upper }}
+                            </div>
+                            {% endif %}
+                            <span class="me-2">{{ member.get_full_name|default:member.username }}</span>
+                            {% if member == chat_room.created_by %}
+                            <span class="badge bg-primary">creator</span>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Select Users to Add</label>
+                        <select name="members" multiple class="form-select" style="height: 200px;">
+                            {% for user in available_users %}
+                            <option value="{{ user.id }}">
+                                {{ user.get_full_name|default:user.username }}
+                                {% if user.userprofile %}
+                                ({{ user.userprofile.get_role_display }})
+                                {% endif %}
+                            </option>
+                            {% empty %}
+                            <option disabled>No users available to add</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Hold Ctrl (or Command on Mac) to select multiple users</div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'chat:detail' chat_room.id %}" class="btn btn-light">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Add Selected Members</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

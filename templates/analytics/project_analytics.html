@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Project Analytics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .project-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        height: 100%;
+        margin-bottom: 20px;
+    }
+    
+    .project-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .progress {
+        height: 10px;
+        border-radius: 5px;
+    }
+    
+    .project-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+    }
+    
+    .project-stat {
+        text-align: center;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+    
+    .stat-label {
+        font-size: 0.8rem;
+        color: #6c757d;
+        text-transform: uppercase;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'analytics:dashboard' %}">Analytics</a></li>
+                    <li class="breadcrumb-item active">Projects</li>
+                </ol>
+            </nav>
+            <h1 class="display-4 mb-0">Project Analytics</h1>
+            <p class="text-muted">Analyze performance across all projects</p>
+            <hr>
+        </div>
+    </div>
+    
+    <!-- Project Cards -->
+    <div class="row">
+        {% for stats in project_stats %}
+        <div class="col-md-6 col-lg-4">
+            <div class="project-card bg-white p-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-3">{{ stats.project.name }}</h5>
+                    <a href="{% url 'analytics:project_detail_analytics' stats.project.id %}" class="btn btn-sm btn-outline-primary">Details</a>
+                </div>
+                
+                <div class="progress-wrapper">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Completion</span>
+                        <span>{{ stats.completion_percentage }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar bg-success" role="progressbar" style="width: {{ stats.completion_percentage }}%" 
+                             aria-valuenow="{{ stats.completion_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                </div>
+                
+                <div class="project-stats">
+                    <div class="project-stat">
+                        <p class="stat-value">{{ stats.total_tasks }}</p>
+                        <p class="stat-label">Total Tasks</p>
+                    </div>
+                    <div class="project-stat">
+                        <p class="stat-value">{{ stats.completed_tasks }}</p>
+                        <p class="stat-label">Completed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <p>No projects available for analysis.</p>
+                <a href="{% url 'projects:create' %}" class="btn btn-primary">Create a Project</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

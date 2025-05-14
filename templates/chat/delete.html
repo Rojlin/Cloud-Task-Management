@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Delete {{ chat_room.name }} - Task Management{% endblock %}
+{% block page_title %}Delete Chat Room{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'dashboard:index' %}" class="breadcrumb-link">Dashboard</a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'chat:list' %}" class="breadcrumb-link">Chat Rooms</a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'chat:detail' chat_room.id %}" class="breadcrumb-link">{{ chat_room.name }}</a>
+</li>
+<li class="breadcrumb-item">
+    <span class="breadcrumb-link">Delete</span>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 col-lg-6 mx-auto">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="card-title mb-0">Confirm Deletion</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Warning! This action cannot be undone.
+                </div>
+                
+                <p>Are you sure you want to delete the chat room <strong>"{{ chat_room.name }}"</strong>?</p>
+                <p>This will permanently delete:</p>
+                <ul>
+                    <li>The chat room itself</li>
+                    <li>All messages in this chat room</li>
+                    <li>All member associations</li>
+                </ul>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{% url 'chat:detail' chat_room.id %}" class="btn btn-light">Cancel</a>
+                        <button type="submit" class="btn btn-danger">Delete Chat Room</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

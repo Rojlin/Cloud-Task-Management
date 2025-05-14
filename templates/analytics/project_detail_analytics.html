@@ -1,0 +1,334 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load analytics_filters %}
+
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .analytics-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        height: 100%;
+        margin-bottom: 20px;
+    }
+    
+    .analytics-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .stat-card {
+        text-align: center;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-value {
+        font-size: 2rem;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        text-transform: uppercase;
+    }
+    
+    .progress-circle {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+    }
+    
+    .progress-circle svg {
+        width: 100%;
+        height: 100%;
+    }
+    
+    .progress-circle circle {
+        fill: none;
+        stroke-width: 8;
+    }
+    
+    .progress-circle .bg {
+        stroke: #f0f0f0;
+    }
+    
+    .progress-circle .progress {
+        stroke: #28a745;
+        stroke-linecap: round;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+        transition: stroke-dashoffset 0.5s ease;
+    }
+    
+    .progress-percentage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'analytics:dashboard' %}">Analytics</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'analytics:project_analytics' %}">Projects</a></li>
+                    <li class="breadcrumb-item active">{{ project.name }}</li>
+                </ol>
+            </nav>
+            <h1 class="display-4 mb-0">{{ project.name }}</h1>
+            <p class="text-muted">Project analytics and performance metrics</p>
+            <hr>
+        </div>
+    </div>
+    
+    <!-- Key Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stat-card bg-white">
+                <h5 class="stat-label">Total Tasks</h5>
+                <p class="stat-value">{{ total_tasks }}</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-white">
+                <h5 class="stat-label">Completed</h5>
+                <p class="stat-value text-success">{{ completed_tasks }}</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-white">
+                <h5 class="stat-label">Overdue</h5>
+                <p class="stat-value text-danger">{{ overdue_tasks }}</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card bg-white">
+                <h5 class="stat-label">Completion</h5>
+                <p class="stat-value">{{ completion_percentage }}%</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="analytics-card bg-white p-4 mb-4">
+                <h5 class="card-title text-center mb-4">Completion Progress</h5>
+                <div class="progress-circle">
+                    <svg width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+                        <circle class="bg" cx="60" cy="60" r="50" />
+                        <circle class="progress" cx="60" cy="60" r="50" 
+                               stroke-dasharray="314.16" 
+                               stroke-dashoffset="{% with remaining=100|subtract:completion_percentage %}{% with offset_val=314.16|multiply:remaining %}{{ offset_val|divide:100 }}{% endwith %}{% endwith %}" />
+                    </svg>
+                    <div class="progress-percentage">{{ completion_percentage }}%</div>
+                </div>
+                <p class="text-center mt-3">{{ completed_tasks }} of {{ total_tasks }} tasks completed</p>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title">Task Status Distribution</h5>
+                <div class="chart-container">
+                    <canvas id="taskStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Priority Distribution Row -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title">Task Priority Distribution</h5>
+                <div class="chart-container" style="height: 200px;">
+                    <canvas id="taskPriorityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Historical Data -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title">Completion Trend</h5>
+                <div class="chart-container">
+                    <canvas id="completionTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Task Status Chart
+        const statusCtx = document.getElementById('taskStatusChart').getContext('2d');
+        const statusLabels = [];
+        const statusData = [];
+        const statusColors = ['#28a745', '#007bff', '#ffc107', '#dc3545', '#6c757d'];
+        
+        {% for item in task_status_counts %}
+            {% if item.status == "todo" %}
+                statusLabels.push('To Do');
+            {% elif item.status == "in_progress" %}
+                statusLabels.push('In Progress');
+            {% elif item.status == "review" %}
+                statusLabels.push('In Review');
+            {% elif item.status == "completed" %}
+                statusLabels.push('Completed');
+            {% else %}
+                statusLabels.push('{{ item.status }}');
+            {% endif %}
+            
+            statusData.push({{ item.count }});
+        {% endfor %}
+        
+        new Chart(statusCtx, {
+            type: 'bar',
+            data: {
+                labels: statusLabels,
+                datasets: [{
+                    label: 'Tasks by Status',
+                    data: statusData,
+                    backgroundColor: statusColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            precision: 0
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Task Priority Chart
+        const priorityCtx = document.getElementById('taskPriorityChart').getContext('2d');
+        const priorityLabels = [];
+        const priorityData = [];
+        const priorityColors = ['#6c757d', '#28a745', '#ffc107', '#dc3545'];
+        
+        {% for item in task_priority_counts %}
+            {% if item.priority == "low" %}
+                priorityLabels.push('Low');
+            {% elif item.priority == "medium" %}
+                priorityLabels.push('Medium');
+            {% elif item.priority == "high" %}
+                priorityLabels.push('High');
+            {% elif item.priority == "urgent" %}
+                priorityLabels.push('Urgent');
+            {% else %}
+                priorityLabels.push('{{ item.priority }}');
+            {% endif %}
+            
+            priorityData.push({{ item.count }});
+        {% endfor %}
+        
+        new Chart(priorityCtx, {
+            type: 'doughnut',
+            data: {
+                labels: priorityLabels,
+                datasets: [{
+                    label: 'Tasks by Priority',
+                    data: priorityData,
+                    backgroundColor: priorityColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    }
+                }
+            }
+        });
+        
+        // Completion Trend Chart
+        const trendCtx = document.getElementById('completionTrendChart').getContext('2d');
+        const trendLabels = [];
+        const trendData = [];
+        
+        {% for item in completion_trend %}
+            {% if item.day %}
+                trendLabels.push('{{ item.day|date:"Y-m-d" }}');
+                
+                // Calculate completion percentage
+                const completionPercentage = ({{ total_tasks }} > 0) ? 
+                    Math.round(({{ item.count }} / {{ total_tasks }}) * 100) : 0;
+                    
+                trendData.push(completionPercentage);
+            {% endif %}
+        {% endfor %}
+        
+        // If no data, add current completion percentage
+        {% if not completion_trend %}
+            trendLabels.push('{% now "Y-m-d" %}');
+            trendData.push({{ completion_percentage }});
+        {% endif %}
+        
+        new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: trendLabels,
+                datasets: [{
+                    label: 'Completion Percentage',
+                    data: trendData,
+                    backgroundColor: 'rgba(40, 167, 69, 0.2)',
+                    borderColor: '#28a745',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

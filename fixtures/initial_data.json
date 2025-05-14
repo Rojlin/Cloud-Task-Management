@@ -1,0 +1,268 @@
+[
+  {
+    "model": "accounts.user",
+    "pk": 2,
+    "fields": {
+      "username": "project_manager",
+      "password": "pbkdf2_sha256$600000$cZd1a4OzcVPDSEoVt5O1rp$G3+cluYPpkL7MdxfXqwGkBP+j+QI5/OYrfB0+QMhDV4=",
+      "email": "pm@example.com",
+      "first_name": "Project",
+      "last_name": "Manager",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "date_joined": "2025-05-12T10:00:00.000Z",
+      "last_login": null
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 3,
+    "fields": {
+      "username": "team_member",
+      "password": "pbkdf2_sha256$600000$cZd1a4OzcVPDSEoVt5O1rp$G3+cluYPpkL7MdxfXqwGkBP+j+QI5/OYrfB0+QMhDV4=",
+      "email": "team@example.com",
+      "first_name": "Team",
+      "last_name": "Member",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "date_joined": "2025-05-12T10:00:00.000Z",
+      "last_login": null
+    }
+  },
+  {
+    "model": "accounts.user",
+    "pk": 4,
+    "fields": {
+      "username": "leader",
+      "password": "pbkdf2_sha256$600000$cZd1a4OzcVPDSEoVt5O1rp$G3+cluYPpkL7MdxfXqwGkBP+j+QI5/OYrfB0+QMhDV4=",
+      "email": "leader@example.com",
+      "first_name": "Team",
+      "last_name": "Leader",
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "date_joined": "2025-05-12T10:00:00.000Z",
+      "last_login": null
+    }
+  },
+  {
+    "model": "accounts.userprofile",
+    "pk": 1,
+    "fields": {
+      "user": 2,
+      "role": "project_manager",
+      "bio": "Experienced project manager with 5+ years in software development.",
+      "created_at": "2025-05-12T10:00:00.000Z",
+      "updated_at": "2025-05-12T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "accounts.userprofile",
+    "pk": 2,
+    "fields": {
+      "user": 3,
+      "role": "team_member",
+      "bio": "Dedicated team member focused on delivering high-quality work.",
+      "created_at": "2025-05-12T10:00:00.000Z",
+      "updated_at": "2025-05-12T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "accounts.userprofile",
+    "pk": 3,
+    "fields": {
+      "user": 4,
+      "role": "leader",
+      "bio": "Team leader with strong communication and organizational skills.",
+      "created_at": "2025-05-12T10:00:00.000Z",
+      "updated_at": "2025-05-12T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": 1,
+    "fields": {
+      "name": "Website Redesign",
+      "description": "Complete redesign of company website with modern UI/UX principles.",
+      "status": "in_progress",
+      "priority": "high",
+      "start_date": "2025-05-01",
+      "end_date": "2025-06-30",
+      "created_by": 2,
+      "created_at": "2025-05-01T10:00:00.000Z",
+      "updated_at": "2025-05-01T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "projects.project",
+    "pk": 2,
+    "fields": {
+      "name": "Mobile App Development",
+      "description": "Development of a new mobile application for Android and iOS platforms.",
+      "status": "planning",
+      "priority": "medium",
+      "start_date": "2025-05-15",
+      "end_date": "2025-08-15",
+      "created_by": 2,
+      "created_at": "2025-05-10T10:00:00.000Z",
+      "updated_at": "2025-05-10T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "projects.projectmember",
+    "pk": 1,
+    "fields": {
+      "project": 1,
+      "user": 2,
+      "role": "project_manager",
+      "joined_at": "2025-05-01T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "projects.projectmember",
+    "pk": 2,
+    "fields": {
+      "project": 1,
+      "user": 3,
+      "role": "team_member",
+      "joined_at": "2025-05-01T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "projects.projectmember",
+    "pk": 3,
+    "fields": {
+      "project": 1,
+      "user": 4,
+      "role": "leader",
+      "joined_at": "2025-05-01T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "projects.projectmember",
+    "pk": 4,
+    "fields": {
+      "project": 2,
+      "user": 2,
+      "role": "project_manager",
+      "joined_at": "2025-05-10T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "projects.projectmember",
+    "pk": 5,
+    "fields": {
+      "project": 2,
+      "user": 4,
+      "role": "leader",
+      "joined_at": "2025-05-10T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "tasks.task",
+    "pk": 1,
+    "fields": {
+      "title": "Design Homepage Mockup",
+      "description": "Create a modern, responsive mockup for the homepage.",
+      "status": "completed",
+      "priority": "high",
+      "due_date": "2025-05-10",
+      "project": 1,
+      "created_by": 2,
+      "assigned_to": 3,
+      "created_at": "2025-05-02T10:00:00.000Z",
+      "updated_at": "2025-05-09T15:00:00.000Z",
+      "completed_at": "2025-05-09T15:00:00.000Z"
+    }
+  },
+  {
+    "model": "tasks.task",
+    "pk": 2,
+    "fields": {
+      "title": "Implement Homepage Frontend",
+      "description": "Implement the homepage design using HTML, CSS, and JavaScript.",
+      "status": "in_progress",
+      "priority": "high",
+      "due_date": "2025-05-20",
+      "project": 1,
+      "created_by": 2,
+      "assigned_to": 3,
+      "created_at": "2025-05-10T10:00:00.000Z",
+      "updated_at": "2025-05-10T10:00:00.000Z",
+      "completed_at": null
+    }
+  },
+  {
+    "model": "tasks.task",
+    "pk": 3,
+    "fields": {
+      "title": "Create App Wireframes",
+      "description": "Create wireframes for the mobile app screens.",
+      "status": "todo",
+      "priority": "medium",
+      "due_date": "2025-05-25",
+      "project": 2,
+      "created_by": 2,
+      "assigned_to": 4,
+      "created_at": "2025-05-11T10:00:00.000Z",
+      "updated_at": "2025-05-11T10:00:00.000Z",
+      "completed_at": null
+    }
+  },
+  {
+    "model": "notifications.notification",
+    "pk": 1,
+    "fields": {
+      "user": 3,
+      "title": "Task Assigned",
+      "message": "You have been assigned a new task: Implement Homepage Frontend",
+      "link": "/tasks/2/",
+      "is_read": false,
+      "created_at": "2025-05-10T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "notifications.notification",
+    "pk": 2,
+    "fields": {
+      "user": 4,
+      "title": "Task Assigned",
+      "message": "You have been assigned a new task: Create App Wireframes",
+      "link": "/tasks/3/",
+      "is_read": false,
+      "created_at": "2025-05-11T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "chat.chatroom",
+    "pk": 1,
+    "fields": {
+      "name": "Website Redesign Team",
+      "description": "Chat room for the Website Redesign project team",
+      "created_by": 2,
+      "created_at": "2025-05-01T10:00:00.000Z"
+    }
+  },
+  {
+    "model": "chat.chatmessage",
+    "pk": 1,
+    "fields": {
+      "room": 1,
+      "sender": 2,
+      "content": "Welcome to the Website Redesign project chat!",
+      "created_at": "2025-05-01T10:05:00.000Z"
+    }
+  },
+  {
+    "model": "chat.chatmessage",
+    "pk": 2,
+    "fields": {
+      "room": 1,
+      "sender": 4,
+      "content": "Thanks! Looking forward to working on this project with everyone.",
+      "created_at": "2025-05-01T10:10:00.000Z"
+    }
+  }
+]

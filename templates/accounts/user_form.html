@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} User - Task Management{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'accounts:user_list' %}" class="breadcrumb-link">User Management</a>
+</li>
+<li class="breadcrumb-item">
+    <span class="breadcrumb-link">{{ action }} User</span>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">{{ action }} User</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="col-sm-3 col-form-label">Username</label>
+                        <div class="col-sm-9">
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.username.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="col-sm-3 col-form-label">Email</label>
+                        <div class="col-sm-9">
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.email.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.first_name.id_for_label }}" class="col-sm-3 col-form-label">First Name</label>
+                        <div class="col-sm-9">
+                            {{ form.first_name }}
+                            {% if form.first_name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.first_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.last_name.id_for_label }}" class="col-sm-3 col-form-label">Last Name</label>
+                        <div class="col-sm-9">
+                            {{ form.last_name }}
+                            {% if form.last_name.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.last_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.role.id_for_label }}" class="col-sm-3 col-form-label">Role</label>
+                        <div class="col-sm-9">
+                            {{ form.role }}
+                            {% if form.role.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.role.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if action == 'Create' or form.password1 %}
+                    <div class="row mb-3">
+                        <label for="{{ form.password1.id_for_label }}" class="col-sm-3 col-form-label">Password</label>
+                        <div class="col-sm-9">
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.password1.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                {{ form.password1.help_text|safe }}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <label for="{{ form.password2.id_for_label }}" class="col-sm-3 col-form-label">Confirm Password</label>
+                        <div class="col-sm-9">
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.password2.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="row">
+                        <div class="col-sm-9 offset-sm-3">
+                            <button type="submit" class="btn btn-primary">{{ action }} User</button>
+                            <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

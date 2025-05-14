@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Project Members - Task Management{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'projects:list' %}" class="breadcrumb-link">Projects</a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'projects:detail' project.id %}" class="breadcrumb-link">{{ project.name }}</a>
+</li>
+<li class="breadcrumb-item">
+    <span class="breadcrumb-link">Members</span>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title">Project Members</h5>
+        <div>
+            <a href="{% url 'projects:add_member' project.id %}" class="btn btn-primary me-2">
+                <i class="fas fa-user-plus"></i> Add Member
+            </a>
+            <a href="{% url 'projects:invite_members' project.id %}" class="btn btn-secondary">
+                <i class="fas fa-envelope"></i> Invite by Email
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Joined Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                {% if project.created_by.userprofile.avatar %}
+                                    <img src="{{ project.created_by.userprofile.avatar.url }}" alt="{{ project.created_by.username }}" class="avatar avatar-sm me-3">
+                                {% else %}
+                                    <div class="avatar avatar-sm d-flex align-items-center justify-content-center bg-primary text-white me-3">
+                                        {{ project.created_by.username|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <div>
+                                    <div>{{ project.created_by.get_full_name|default:project.created_by.username }}</div>
+                                    <div class="small text-muted">Project Creator</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>{{ project.created_by.email }}</td>
+                        <td>
+                            {% for member in members %}
+                                {% if member.user == project.created_by %}
+                                    <span class="badge {% if member.role == 'project_manager' %}badge-primary{% elif member.role == 'leader' %}badge-success{% else %}badge-secondary{% endif %}">
+                                        {{ member.get_role_display }}
+                                    </span>
+                                {% endif %}
+                            {% endfor %}
+                        </td>
+                        <td>{{ project.created_at|date:"M d, Y" }}</td>
+                        <td>
+                            <div class="text-muted">
+                                <i class="fas fa-lock"></i> Creator
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    {% for member in members %}
+                        {% if member.user != project.created_by %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if member.user.userprofile.avatar %}
+                                        <img src="{{ member.user.userprofile.avatar.url }}" alt="{{ member.user.username }}" class="avatar avatar-sm me-3">
+                                    {% else %}
+                                        <div class="avatar avatar-sm d-flex align-items-center justify-content-center bg-primary text-white me-3">
+                                            {{ member.user.username|first|upper }}
+                                        </div>
+                                    {% endif %}
+                                    <div>{{ member.user.get_full_name|default:member.user.username }}</div>
+                                </div>
+                            </td>
+                            <td>{{ member.user.email }}</td>
+                            <td>
+                                <span class="badge {% if member.role == 'project_manager' %}badge-primary{% elif member.role == 'leader' %}badge-success{% else %}badge-secondary{% endif %}">
+                                    {{ member.get_role_display }}
+                                </span>
+                            </td>
+                            <td>{{ member.joined_at|date:"M d, Y" }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'projects:edit_member' project.id member.id %}" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Edit Role">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'projects:remove_member' project.id member.id %}" class="btn btn-sm btn-danger" data-toggle="tooltip" title="Remove Member">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

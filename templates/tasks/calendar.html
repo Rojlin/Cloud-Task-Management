@@ -1,0 +1,433 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Task Calendar | Task Management{% endblock %}
+
+{% block extra_css %}
+<style>
+  .calendar-event {
+    cursor: pointer;
+  }
+  .calendar-day {
+    min-height: 100px;
+  }
+  .calendar-day-today {
+    background-color: rgba(52, 152, 219, 0.1);
+  }
+  .calendar-day-header {
+    font-weight: bold;
+    text-align: center;
+    padding: 5px;
+    border-bottom: 1px solid #dee2e6;
+  }
+  .calendar-day-number {
+    font-size: 16px;
+  }
+  .calendar-month-other {
+    background-color: #f8f9fa;
+    color: #adb5bd;
+  }
+  .task-priority-high {
+    border-left: 4px solid #e74c3c !important;
+  }
+  .task-priority-medium {
+    border-left: 4px solid #f39c12 !important;
+  }
+  .task-priority-low {
+    border-left: 4px solid #2ecc71 !important;
+  }
+  .calendar-event {
+    margin-bottom: 5px;
+    padding: 5px;
+    border-radius: 3px;
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <h1 class="h3 mb-0 text-gray-800">Task Calendar</h1>
+      <p class="mb-0">View and manage tasks by date</p>
+    </div>
+    <div class="col-md-6 text-right">
+      <div class="btn-group">
+        <button id="prev-month" class="btn btn-outline-primary">
+          <i class="fas fa-chevron-left"></i> Previous
+        </button>
+        <button id="current-month" class="btn btn-outline-primary">Today</button>
+        <button id="next-month" class="btn btn-outline-primary">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+      
+      <div class="dropdown d-inline-block ml-2">
+        <button class="btn btn-primary dropdown-toggle" type="button" id="calendarViewDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <i class="fas fa-plus"></i> Add Task
+        </button>
+        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="calendarViewDropdown">
+          <a class="dropdown-item" href="{% url 'tasks:create' %}">New Task</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'tasks:list' %}">Task List</a>
+          <a class="dropdown-item" href="{% url 'tasks:kanban' %}">Kanban Board</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Month and Year Display -->
+  <div class="row mb-4">
+    <div class="col-12 text-center">
+      <h2 id="calendar-title" class="h4">May 2025</h2>
+    </div>
+  </div>
+
+  <!-- Calendar Grid -->
+  <div class="row mb-4">
+    <div class="col-12">
+      <div class="card shadow">
+        <div class="card-body p-0">
+          <!-- Day Headers -->
+          <div class="row m-0 border-bottom">
+            <div class="col p-0 text-center py-2 border-right">
+              <strong>Sunday</strong>
+            </div>
+            <div class="col p-0 text-center py-2 border-right">
+              <strong>Monday</strong>
+            </div>
+            <div class="col p-0 text-center py-2 border-right">
+              <strong>Tuesday</strong>
+            </div>
+            <div class="col p-0 text-center py-2 border-right">
+              <strong>Wednesday</strong>
+            </div>
+            <div class="col p-0 text-center py-2 border-right">
+              <strong>Thursday</strong>
+            </div>
+            <div class="col p-0 text-center py-2 border-right">
+              <strong>Friday</strong>
+            </div>
+            <div class="col p-0 text-center py-2">
+              <strong>Saturday</strong>
+            </div>
+          </div>
+
+          <!-- Calendar Grid - will be populated by JavaScript -->
+          <div id="calendar-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Task Modal -->
+<div class="modal fade" id="taskModal" tabindex="-1" role="dialog" aria-labelledby="taskModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="taskModalLabel">Task Details</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body" id="taskModalBody">
+        <!-- Task details will be loaded here -->
+        <div class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="sr-only">Loading...</span>
+          </div>
+          <p class="mt-2">Loading task details...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <a href="#" id="editTaskBtn" class="btn btn-primary">Edit Task</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Current date tracking
+    let currentDate = new Date();
+    let currentMonth = currentDate.getMonth();
+    let currentYear = currentDate.getFullYear();
+    
+    // Initial render
+    renderCalendar(currentMonth, currentYear);
+    updateCalendarTitle(currentMonth, currentYear);
+    
+    // Button event listeners
+    document.getElementById('prev-month').addEventListener('click', function() {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderCalendar(currentMonth, currentYear);
+      updateCalendarTitle(currentMonth, currentYear);
+    });
+    
+    document.getElementById('next-month').addEventListener('click', function() {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar(currentMonth, currentYear);
+      updateCalendarTitle(currentMonth, currentYear);
+    });
+    
+    document.getElementById('current-month').addEventListener('click', function() {
+      const today = new Date();
+      currentMonth = today.getMonth();
+      currentYear = today.getFullYear();
+      renderCalendar(currentMonth, currentYear);
+      updateCalendarTitle(currentMonth, currentYear);
+    });
+    
+    // Task modal event
+    document.getElementById('calendar-grid').addEventListener('click', function(e) {
+      const taskElement = e.target.closest('.calendar-event');
+      if (taskElement) {
+        const taskId = taskElement.getAttribute('data-task-id');
+        if (taskId) {
+          openTaskModal(taskId);
+        }
+      }
+    });
+  });
+  
+  // Update calendar title
+  function updateCalendarTitle(month, year) {
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June', 'July',
+      'August', 'September', 'October', 'November', 'December'
+    ];
+    document.getElementById('calendar-title').textContent = `${monthNames[month]} ${year}`;
+  }
+  
+  // Render the calendar grid
+  function renderCalendar(month, year) {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    const startingDay = firstDay.getDay(); // 0 = Sunday
+    
+    const calendarGrid = document.getElementById('calendar-grid');
+    calendarGrid.innerHTML = '';
+    
+    // Create weeks (rows)
+    let date = 1;
+    let dayOfMonth = 1;
+    
+    // Calculate how many weeks we need to display
+    const totalDaysToShow = startingDay + daysInMonth;
+    const numberOfWeeks = Math.ceil(totalDaysToShow / 7);
+    
+    for (let i = 0; i < numberOfWeeks; i++) {
+      // Create week row
+      const week = document.createElement('div');
+      week.className = 'row m-0';
+      
+      // Create days in this week
+      for (let j = 0; j < 7; j++) {
+        const day = document.createElement('div');
+        day.className = 'col p-2 border-right border-bottom calendar-day';
+        
+        if (i === 0 && j < startingDay) {
+          // Previous month days
+          const prevMonthLastDay = new Date(year, month, 0).getDate();
+          const prevMonthDay = prevMonthLastDay - (startingDay - j - 1);
+          
+          day.innerHTML = `
+            <div class="calendar-day-header calendar-month-other">
+              <span class="calendar-day-number">${prevMonthDay}</span>
+            </div>
+            <div class="calendar-day-content" data-date="${year}-${month === 0 ? 12 : month}-${prevMonthDay}"></div>
+          `;
+          day.classList.add('calendar-month-other');
+        } else if (date > daysInMonth) {
+          // Next month days
+          const nextMonthDay = date - daysInMonth;
+          
+          day.innerHTML = `
+            <div class="calendar-day-header calendar-month-other">
+              <span class="calendar-day-number">${nextMonthDay}</span>
+            </div>
+            <div class="calendar-day-content" data-date="${year}-${month === 11 ? 1 : month + 2}-${nextMonthDay}"></div>
+          `;
+          day.classList.add('calendar-month-other');
+          date++;
+        } else {
+          // Current month days
+          const isToday = new Date().getDate() === date && new Date().getMonth() === month && new Date().getFullYear() === year;
+          
+          if (isToday) {
+            day.classList.add('calendar-day-today');
+          }
+          
+          const formattedMonth = (month + 1).toString().padStart(2, '0');
+          const formattedDate = date.toString().padStart(2, '0');
+          const dateString = `${year}-${formattedMonth}-${formattedDate}`;
+          
+          day.innerHTML = `
+            <div class="calendar-day-header">
+              <span class="calendar-day-number">${date}</span>
+            </div>
+            <div class="calendar-day-content" data-date="${dateString}"></div>
+          `;
+          
+          // Here we would load tasks for this date
+          loadTasksForDate(dateString, day.querySelector('.calendar-day-content'));
+          
+          date++;
+        }
+        
+        // If this is the last column, remove the right border
+        if (j === 6) {
+          day.classList.remove('border-right');
+        }
+        
+        week.appendChild(day);
+      }
+      
+      calendarGrid.appendChild(week);
+    }
+  }
+  
+  // Load tasks for a specific date
+  function loadTasksForDate(dateString, container) {
+    // For demo purposes, add some placeholder tasks
+    // In a real app, you would fetch tasks from the server
+    
+    // Simulate API call with a timeout
+    setTimeout(() => {
+      // Get tasks for this date from server
+      fetch(`/tasks/api/tasks-by-date/?date=${dateString}`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.tasks && data.tasks.length > 0) {
+            data.tasks.forEach(task => {
+              addTaskToCalendar(task, container);
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error fetching tasks:', error);
+        });
+    }, 100);
+  }
+  
+  // Add a task to the calendar
+  function addTaskToCalendar(task, container) {
+    const taskElement = document.createElement('div');
+    taskElement.className = `calendar-event task-priority-${task.priority.toLowerCase()}`;
+    taskElement.setAttribute('data-task-id', task.id);
+    
+    // Create task content
+    taskElement.innerHTML = `
+      <div class="d-flex justify-content-between">
+        <span class="text-truncate">${task.title}</span>
+        <small class="ml-1">${task.status_display}</small>
+      </div>
+    `;
+    
+    container.appendChild(taskElement);
+  }
+  
+  // Open task modal
+  function openTaskModal(taskId) {
+    // Show the modal
+    $('#taskModal').modal('show');
+    
+    // Update the edit button link
+    document.getElementById('editTaskBtn').href = `/tasks/${taskId}/edit/`;
+    
+    // Load task details
+    fetch(`/tasks/api/task/${taskId}/`)
+      .then(response => response.json())
+      .then(task => {
+        const modalBody = document.getElementById('taskModalBody');
+        
+        // Create priority badge
+        let priorityClass = 'badge-success';
+        if (task.priority === 'High') {
+          priorityClass = 'badge-danger';
+        } else if (task.priority === 'Medium') {
+          priorityClass = 'badge-warning';
+        }
+        
+        // Create status badge
+        let statusClass = 'badge-secondary';
+        if (task.status === 'in_progress') {
+          statusClass = 'badge-warning';
+        } else if (task.status === 'completed') {
+          statusClass = 'badge-success';
+        }
+        
+        // Format the content
+        modalBody.innerHTML = `
+          <h4>${task.title}</h4>
+          <div class="mb-3">
+            <span class="badge ${priorityClass} mr-2">${task.priority}</span>
+            <span class="badge ${statusClass}">${task.status_display}</span>
+          </div>
+          
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <p><strong>Due Date:</strong> ${task.due_date}</p>
+            </div>
+            <div class="col-md-6">
+              <p><strong>Assigned To:</strong> ${task.assigned_to_name}</p>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <h5>Description</h5>
+            <p>${task.description || 'No description provided'}</p>
+          </div>
+          
+          <div>
+            <h5>Project</h5>
+            <p><a href="/projects/${task.project_id}/">${task.project_name}</a></p>
+          </div>
+          
+          ${task.attachments && task.attachments.length > 0 ? `
+            <div class="mt-3">
+              <h5>Attachments</h5>
+              <ul class="list-group">
+                ${task.attachments.map(attachment => `
+                  <li class="list-group-item">
+                    <a href="${attachment.file}" target="_blank">
+                      <i class="fas fa-file mr-2"></i> ${attachment.filename}
+                    </a>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+          ` : ''}
+        `;
+      })
+      .catch(error => {
+        console.error('Error fetching task details:', error);
+        document.getElementById('taskModalBody').innerHTML = `
+          <div class="alert alert-danger">
+            Error loading task details. Please try again.
+          </div>
+        `;
+      });
+  }
+</script>
+{% endblock %}

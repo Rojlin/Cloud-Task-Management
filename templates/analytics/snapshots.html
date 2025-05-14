@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Analytics Snapshots{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .analytics-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+    
+    .analytics-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .snapshot-item {
+        border-left: 4px solid #6c757d;
+        transition: all 0.3s ease;
+    }
+    
+    .snapshot-item:hover {
+        background-color: rgba(0, 123, 255, 0.05);
+    }
+    
+    .snapshot-date {
+        min-width: 120px;
+    }
+    
+    .snapshot-stats {
+        display: flex;
+        gap: 15px;
+    }
+    
+    .stat-badge {
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    
+    .project-header {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'analytics:dashboard' %}">Analytics</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Snapshots</li>
+                </ol>
+            </nav>
+            
+            <h1 class="display-4 mb-0">{{ page_title }}</h1>
+            <p class="text-muted">Historical analytics data for system-wide and project-specific metrics</p>
+            <hr>
+        </div>
+    </div>
+    
+    <!-- Global Snapshots -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">System-wide Analytics Snapshots</h5>
+                
+                {% if global_snapshots %}
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Total Tasks</th>
+                                <th>Completed</th>
+                                <th>Pending</th>
+                                <th>Overdue</th>
+                                <th>Active Users</th>
+                                <th>Completion Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for snapshot in global_snapshots %}
+                            <tr class="snapshot-item">
+                                <td class="snapshot-date">{{ snapshot.timestamp|date:"M d, Y H:i" }}</td>
+                                <td>{{ snapshot.total_tasks }}</td>
+                                <td>
+                                    <span class="stat-badge bg-success text-white">
+                                        {{ snapshot.completed_tasks }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="stat-badge bg-info text-white">
+                                        {{ snapshot.pending_tasks }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="stat-badge bg-danger text-white">
+                                        {{ snapshot.overdue_tasks }}
+                                    </span>
+                                </td>
+                                <td>{{ snapshot.active_users }}</td>
+                                <td>
+                                    <div class="progress" style="height: 8px; width: 100px;">
+                                        <div class="progress-bar 
+                                            {% with completion_percent=snapshot.completed_tasks|floatformat:0|default:0 %}
+                                                {% if snapshot.completed_tasks == 0 or snapshot.total_tasks == 0 %}
+                                                    bg-secondary
+                                                {% elif completion_percent < 30 %}
+                                                    bg-danger
+                                                {% elif completion_percent < 70 %}
+                                                    bg-warning
+                                                {% else %}
+                                                    bg-success
+                                                {% endif %}
+                                            {% endwith %}" 
+                                            role="progressbar" 
+                                            style="width: {{ snapshot.completed_tasks|floatformat:0|default:0 }}%"
+                                            aria-valuenow="{{ snapshot.completed_tasks|floatformat:0|default:0 }}" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="{{ snapshot.total_tasks|default:1 }}">
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">
+                                        {% if snapshot.total_tasks > 0 %}
+                                            {{ snapshot.completed_tasks|floatformat:0 }}%
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </small>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No system-wide analytics snapshots available yet. Snapshots are automatically generated on a regular basis to track performance metrics over time.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Project Snapshots -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Project-specific Analytics Snapshots</h5>
+                
+                {% if project_snapshot_groups %}
+                    {% for group in project_snapshot_groups %}
+                    <div class="project-header p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">{{ group.project.name }}</h6>
+                            <a href="{% url 'analytics:project_detail_analytics' group.project.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-chart-line me-1"></i> View Project Analytics
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive mb-4">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Total Tasks</th>
+                                    <th>Completed</th>
+                                    <th>Pending</th>
+                                    <th>Overdue</th>
+                                    <th>Team Members</th>
+                                    <th>Completion Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for snapshot in group.snapshots %}
+                                <tr class="snapshot-item">
+                                    <td class="snapshot-date">{{ snapshot.timestamp|date:"M d, Y H:i" }}</td>
+                                    <td>{{ snapshot.total_tasks }}</td>
+                                    <td>
+                                        <span class="stat-badge bg-success text-white">
+                                            {{ snapshot.completed_tasks }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="stat-badge bg-info text-white">
+                                            {{ snapshot.pending_tasks }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="stat-badge bg-danger text-white">
+                                            {{ snapshot.overdue_tasks }}
+                                        </span>
+                                    </td>
+                                    <td>{{ snapshot.active_users }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 8px; width: 100px;">
+                                            <div class="progress-bar 
+                                                {% with completion_percent=snapshot.completed_tasks|floatformat:0|default:0 %}
+                                                    {% if snapshot.completed_tasks == 0 or snapshot.total_tasks == 0 %}
+                                                        bg-secondary
+                                                    {% elif completion_percent < 30 %}
+                                                        bg-danger
+                                                    {% elif completion_percent < 70 %}
+                                                        bg-warning
+                                                    {% else %}
+                                                        bg-success
+                                                    {% endif %}
+                                                {% endwith %}" 
+                                                role="progressbar" 
+                                                style="width: {{ snapshot.completed_tasks|floatformat:0|default:0 }}%"
+                                                aria-valuenow="{{ snapshot.completed_tasks|floatformat:0|default:0 }}" 
+                                                aria-valuemin="0" 
+                                                aria-valuemax="{{ snapshot.total_tasks|default:1 }}">
+                                            </div>
+                                        </div>
+                                        <small class="text-muted">
+                                            {% if snapshot.total_tasks > 0 %}
+                                                {{ snapshot.completed_tasks|floatformat:0 }}%
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No project-specific analytics snapshots available yet. Snapshots are automatically generated for each project to track performance metrics over time.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Explanation and Related Links -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-3">About Analytics Snapshots</h5>
+                <p>
+                    Analytics snapshots capture the state of your tasks and projects at regular intervals, allowing you to track trends and performance over time. These snapshots include metrics such as task completion rates, pending tasks, overdue tasks, and active user counts.
+                </p>
+                <p>
+                    System-wide snapshots provide a bird's-eye view of your entire organization's performance, while project-specific snapshots focus on individual projects. This historical data can help identify patterns, bottlenecks, and areas for improvement in your workflow.
+                </p>
+                
+                <div class="mt-4">
+                    <h6>Related Analytics</h6>
+                    <div class="row mt-3">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'analytics:dashboard' %}" class="btn btn-outline-primary btn-lg w-100">
+                                <i class="fas fa-chart-bar me-2"></i> Main Dashboard
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'analytics:project_analytics' %}" class="btn btn-outline-success btn-lg w-100">
+                                <i class="fas fa-project-diagram me-2"></i> Project Analytics
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'analytics:task_analytics' %}" class="btn btn-outline-info btn-lg w-100">
+                                <i class="fas fa-tasks me-2"></i> Task Analytics
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'analytics:productivity_analytics' %}" class="btn btn-outline-secondary btn-lg w-100">
+                                <i class="fas fa-user-clock me-2"></i> Productivity
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+{% endblock %}

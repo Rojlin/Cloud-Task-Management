@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete User - Task Management{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'accounts:user_list' %}" class="breadcrumb-link">User Management</a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'accounts:user_detail' user_obj.id %}" class="breadcrumb-link">User Details</a>
+</li>
+<li class="breadcrumb-item">
+    <span class="breadcrumb-link">Delete User</span>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title text-danger">Delete User</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                
+                <p>Are you sure you want to delete the user <strong>{{ user_obj.username }}</strong>?</p>
+                
+                <p>This will delete:</p>
+                <ul>
+                    <li>User's profile information</li>
+                    <li>User's project memberships</li>
+                    <li>User's task assignments (tasks will remain but be unassigned)</li>
+                    <li>User's comments and attachments on tasks</li>
+                </ul>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'accounts:user_detail' user_obj.id %}" class="btn btn-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-danger">Delete User</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

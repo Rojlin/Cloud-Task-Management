@@ -1,0 +1,14 @@
+Django==5.2.1
+djangorestframework==3.16.0
+channels==4.2.2
+daphne==4.1.0
+Pillow==10.2.0
+psycopg2-binary==2.9.9
+django-filter==23.5
+dj-database-url==2.1.0
+uvicorn==0.27.1
+django-storages==1.14.2
+django-cors-headers==4.3.1
+python-dotenv==1.0.1
+whitenoise==6.6.0
+gunicorn==21.2.0

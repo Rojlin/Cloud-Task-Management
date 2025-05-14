@@ -1,0 +1,1356 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    /* Animated Wave Background */
+    @keyframes wave {
+        0% { transform: translateX(0) translateZ(0) scaleY(1); }
+        50% { transform: translateX(-25%) translateZ(0) scaleY(0.8); }
+        100% { transform: translateX(-50%) translateZ(0) scaleY(1); }
+    }
+    
+    @keyframes wave-reverse {
+        0% { transform: translateX(0) translateZ(0) scaleY(1); }
+        50% { transform: translateX(25%) translateZ(0) scaleY(0.8); }
+        100% { transform: translateX(50%) translateZ(0) scaleY(1); }
+    }
+    
+    @keyframes floating {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0px); }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: -1000px 0; }
+        100% { background-position: 1000px 0; }
+    }
+    
+    .dashboard-hero {
+        background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+        border-radius: 20px;
+        padding: 50px 40px;
+        margin-bottom: 30px;
+        color: white;
+        box-shadow: 0 15px 25px rgba(44, 62, 80, 0.2);
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+    
+    .dashboard-hero::before,
+    .dashboard-hero::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-repeat: repeat-x;
+        background-position: 0 bottom;
+        background-size: 960px 80px;
+    }
+    
+    .dashboard-hero::before {
+        height: 45px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M321.39 56.44c58-10.79 114.16-30.13 172-41.86 82.39-16.72 168.19-17.73 250.45-.39C823.78 31 906.67 72 985.66 92.83c70.05 18.48 146.53 26.09 214.34 3V0H0v27.35a600.21 600.21 0 00321.39 29.09z' fill='rgba(255, 255, 255, 0.2)'/%3E%3C/svg%3E");
+        z-index: 1;
+        animation: wave 30s linear infinite;
+    }
+    
+    .dashboard-hero::after {
+        height: 30px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 120' preserveAspectRatio='none'%3E%3Cpath d='M321.39 56.44c58-10.79 114.16-30.13 172-41.86 82.39-16.72 168.19-17.73 250.45-.39C823.78 31 906.67 72 985.66 92.83c70.05 18.48 146.53 26.09 214.34 3V0H0v27.35a600.21 600.21 0 00321.39 29.09z' fill='rgba(255, 255, 255, 0.1)'/%3E%3C/svg%3E");
+        z-index: 2;
+        animation: wave-reverse 20s linear infinite;
+    }
+    
+    .dashboard-hero-content {
+        position: relative;
+        z-index: 3;
+    }
+    
+    .hero-icon {
+        animation: floating 6s ease-in-out infinite;
+        filter: drop-shadow(0 5px 15px rgba(255, 255, 255, 0.3));
+    }
+    
+    .dashboard-hero h2 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dashboard-hero p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    .welcome-cards {
+        position: relative;
+        margin-top: 25px;
+    }
+    
+    /* Weather Widget */
+    .weather-widget {
+        display: flex;
+        align-items: center;
+        background: linear-gradient(135deg, #3498db, #1a75bb);
+        border-radius: 50px;
+        padding: 10px 20px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        margin-top: 20px;
+        animation: fadeIn 0.8s ease-out forwards;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .weather-icon {
+        font-size: 2.2rem;
+        margin-right: 15px;
+        color: #fff;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    .weather-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .weather-temp {
+        font-size: 1.3rem;
+        font-weight: 600;
+        display: inline-block;
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    
+    .weather-desc {
+        font-size: 0.85rem;
+        color: rgba(255,255,255,0.95);
+        margin-top: 2px;
+    }
+    
+    /* Enhanced Stat Cards */
+    .stat-card {
+        border-radius: 16px;
+        overflow: hidden;
+        position: relative;
+        padding: 25px;
+        height: 100%;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        animation: fadeIn 0.6s ease-out forwards;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+        z-index: 0;
+    }
+    
+    .stat-card-projects {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+    }
+    
+    .stat-card-active {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        color: white;
+    }
+    
+    .stat-card-completed {
+        background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        color: white;
+    }
+    
+    .stat-card-overdue {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+    }
+    
+    .stat-card-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .stat-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        margin-bottom: 15px;
+        font-size: 1.8rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-icon::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to right, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0) 100%);
+        animation: shimmer 2s infinite;
+    }
+    
+    .stat-icon-projects {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    .stat-icon-active {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    .stat-icon-completed {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    .stat-icon-overdue {
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    .stat-value {
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin: 0 0 5px;
+        line-height: 1;
+        text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+    
+    .stat-label {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        margin: 0;
+    }
+    
+    /* Enhanced Dashboard Cards */
+    .dashboard-card {
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+        border: 1px solid rgba(0, 0, 0, 0.03);
+        transition: all 0.3s ease;
+        animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    .dashboard-card:hover {
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08);
+        transform: translateY(-5px);
+    }
+    
+    .dashboard-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 25px;
+        background: #f8f9fa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    
+    .dashboard-card-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0;
+        color: #212529;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .dashboard-card-body {
+        padding: 25px;
+        background: #fff;
+    }
+    
+    /* Pinned Notes and Announcements */
+    .announcements-section {
+        margin-bottom: 30px;
+    }
+    
+    .announcement-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        margin-bottom: 15px;
+        border-left: 4px solid;
+        animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    .announcement-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.08);
+    }
+    
+    .announcement-company {
+        border-left-color: #e74c3c;
+    }
+    
+    .announcement-project {
+        border-left-color: #3498db;
+    }
+    
+    .announcement-tips {
+        border-left-color: #2ecc71;
+    }
+    
+    .announcement-header {
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .announcement-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .announcement-icon {
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        color: white;
+        font-size: 0.9rem;
+    }
+    
+    .announcement-icon-company {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    }
+    
+    .announcement-icon-project {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+    }
+    
+    .announcement-icon-tips {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+    }
+    
+    .announcement-date {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .announcement-body {
+        padding: 15px 20px;
+        color: #495057;
+    }
+    
+    .announcement-footer {
+        padding: 10px 20px;
+        background: #f8f9fa;
+        font-size: 0.85rem;
+        color: #6c757d;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .announcement-author {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .announcement-avatar {
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        color: #495057;
+    }
+    
+    .announcement-actions {
+        display: flex;
+        gap: 15px;
+    }
+    
+    .announcement-action {
+        color: #6c757d;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: color 0.2s ease;
+    }
+    
+    .announcement-action:hover {
+        color: #a020f0;
+    }
+    
+    .announcement-action i {
+        font-size: 0.9rem;
+    }
+    
+    /* Timeline Component */
+    .timeline {
+        position: relative;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 18px;
+        width: 2px;
+        background: #e9ecef;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-left: 45px;
+        padding-bottom: 25px;
+    }
+    
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .timeline-dot {
+        position: absolute;
+        top: 0;
+        left: 10px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid #4361ee;
+        z-index: 1;
+    }
+    
+    .timeline-content {
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 15px;
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+    }
+    
+    .timeline-title {
+        font-weight: 600;
+        margin: 0 0 5px;
+        color: #212529;
+    }
+    
+    .timeline-time {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 10px;
+        display: block;
+    }
+    
+    .timeline-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 30px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        margin-right: 5px;
+    }
+    
+    /* Project Progress */
+    .project-progress-item {
+        margin-bottom: 22px;
+        padding-bottom: 22px;
+        border-bottom: 1px dashed #e9ecef;
+        animation: fadeIn 0.8s ease-out forwards;
+    }
+    
+    .project-progress-item:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .project-title {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+    }
+    
+    .project-title h6 {
+        font-weight: 600;
+        margin: 0;
+        font-size: 1rem;
+    }
+    
+    .project-title .percent {
+        font-weight: 600;
+        color: #4361ee;
+    }
+    
+    .progress {
+        height: 8px;
+        overflow: visible;
+        font-size: .75rem;
+        background-color: #e9ecef;
+        border-radius: 30px;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+        margin-bottom: 10px;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        border-radius: 30px;
+        transition: width 1s ease;
+        position: relative;
+    }
+    
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        right: 0;
+        top: -3px;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #4361ee;
+    }
+    
+    .progress-bar-low {
+        background: linear-gradient(to right, #4361ee, #4cc9f0);
+    }
+    
+    .progress-bar-medium {
+        background: linear-gradient(to right, #4361ee, #3a0ca3);
+    }
+    
+    .progress-bar-high {
+        background: linear-gradient(to right, #f72585, #7209b7);
+    }
+    
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+    
+    .task-count {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+    }
+    
+    .task-count i {
+        font-size: 0.7rem;
+    }
+    
+    /* Enhanced Task Search */
+    .task-search {
+        position: relative;
+        margin-bottom: 25px;
+    }
+    
+    .task-search input {
+        padding: 15px 20px;
+        padding-left: 50px;
+        border-radius: 16px;
+        border: 1px solid #ced4da;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        font-size: 1rem;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+    
+    .task-search input:focus {
+        border-color: #4361ee;
+        box-shadow: 0 8px 20px rgba(67, 97, 238, 0.15);
+        outline: none;
+    }
+    
+    .task-search i {
+        position: absolute;
+        left: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #4361ee;
+        font-size: 1.1rem;
+    }
+    
+    /* Enhanced Tasks Table */
+    .tasks-table {
+        box-shadow: none;
+        border-radius: 16px;
+        overflow: hidden;
+    }
+    
+    .tasks-table th {
+        font-weight: 600;
+        color: #495057;
+        background: #f8f9fa;
+        border-top: none;
+        padding: 15px 20px;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .tasks-table td {
+        padding: 15px 20px;
+        vertical-align: middle;
+        border-color: #f2f2f2;
+    }
+    
+    .tasks-table tr:hover {
+        background-color: rgba(67, 97, 238, 0.03);
+    }
+    
+    .task-link {
+        color: #212529;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .task-link:hover {
+        color: #4361ee;
+        transform: translateX(3px);
+    }
+    
+    .task-link i {
+        font-size: 0.8rem;
+        opacity: 0;
+        transition: all 0.2s ease;
+    }
+    
+    .task-link:hover i {
+        opacity: 1;
+    }
+    
+    .task-badge {
+        font-size: 0.75rem;
+        font-weight: 500;
+        padding: 0.5em 0.8em;
+        border-radius: 30px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Quick Actions */
+    .quick-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-top: 35px;
+    }
+    
+    .quick-actions .btn {
+        padding: 12px 25px;
+        border-radius: 16px;
+        font-weight: 600;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .quick-actions .btn:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .quick-actions .btn-primary {
+        background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+        border: none;
+    }
+    
+    .quick-actions .btn-outline-success {
+        color: #06d6a0;
+        border-color: #06d6a0;
+        background: rgba(6, 214, 160, 0.05);
+    }
+    
+    .quick-actions .btn-outline-success:hover {
+        background: linear-gradient(135deg, #06d6a0 0%, #029e74 100%);
+        border-color: transparent;
+        color: white;
+    }
+    
+    .quick-actions .btn-outline-info {
+        color: #4cc9f0;
+        border-color: #4cc9f0;
+        background: rgba(76, 201, 240, 0.05);
+    }
+    
+    .quick-actions .btn-outline-info:hover {
+        background: linear-gradient(135deg, #4cc9f0 0%, #3a97f0 100%);
+        border-color: transparent;
+        color: white;
+    }
+    
+    .quick-actions .btn-outline-secondary {
+        color: #6c757d;
+        border-color: #6c757d;
+        background: rgba(108, 117, 125, 0.05);
+    }
+    
+    .quick-actions .btn-outline-secondary:hover {
+        background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        border-color: transparent;
+        color: white;
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 1200px) {
+        .weather-widget {
+            margin-bottom: 20px;
+        }
+    }
+    
+    @media (max-width: 992px) {
+        .dashboard-hero {
+            padding: 40px 30px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .dashboard-hero {
+            padding: 30px 20px;
+            text-align: center;
+        }
+        
+        .dashboard-hero h2 {
+            font-size: 2rem;
+        }
+        
+        .dashboard-hero p {
+            font-size: 1rem;
+        }
+        
+        .stat-card {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .weather-widget {
+            justify-content: center;
+            margin-top: 20px;
+            margin-bottom: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Hero Welcome Section with Wave animation and Weather Widget -->
+<div class="dashboard-hero">
+    <div class="dashboard-hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-7 col-md-6">
+                <h2>Welcome back, {{ user.first_name|default:user.username }}!</h2>
+                <p>Here's an overview of your productivity and tasks</p>
+                
+                <!-- Weather Widget -->
+                <div class="weather-widget d-inline-block">
+                    <div class="weather-icon">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <div class="weather-info">
+                        <div class="weather-temp">24°C</div>
+                        <div class="weather-desc">Sunny Day, Perfect for Productivity</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5 col-md-6 text-end d-none d-md-block">
+                <i class="fas fa-chart-line fa-4x hero-icon"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pinned Notes and Announcements Section -->
+<div class="announcements-section">
+    <!-- Company Announcement Row -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="announcement-card announcement-company">
+                <div class="announcement-header">
+                    <h5 class="announcement-title">
+                        <span class="announcement-icon announcement-icon-company">
+                            <i class="fas fa-bullhorn"></i>
+                        </span>
+                        Company Announcement
+                    </h5>
+                    <span class="announcement-date">May 11, 2025</span>
+                </div>
+                <div class="announcement-body">
+                    <p>Our company has been recognized as one of the top 50 tech workplaces! We're planning a celebration event next Friday. Details to follow.</p>
+                </div>
+                <div class="announcement-footer">
+                    <div class="announcement-author">
+                        <div class="announcement-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>Admin</span>
+                    </div>
+                    <div class="announcement-actions">
+                        <a href="#" class="announcement-action">
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>12</span>
+                        </a>
+                        <a href="#" class="announcement-action">
+                            <i class="fas fa-comment"></i>
+                            <span>5</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Project Update and Tips Row (side by side) -->
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <!-- Project Announcement -->
+            <div class="announcement-card announcement-project h-100">
+                <div class="announcement-header">
+                    <h5 class="announcement-title">
+                        <span class="announcement-icon announcement-icon-project">
+                            <i class="fas fa-clipboard-list"></i>
+                        </span>
+                        Project Update
+                    </h5>
+                    <span class="announcement-date">May 10, 2025</span>
+                </div>
+                <div class="announcement-body">
+                    <p>The "Website Redesign" project has entered its final phase. All tasks should be completed by May 20th. Please update your progress daily.</p>
+                </div>
+                <div class="announcement-footer">
+                    <div class="announcement-author">
+                        <div class="announcement-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>Project Manager</span>
+                    </div>
+                    <div class="announcement-actions">
+                        <a href="#" class="announcement-action">
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>8</span>
+                        </a>
+                        <a href="#" class="announcement-action">
+                            <i class="fas fa-comment"></i>
+                            <span>3</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+            <!-- Tips & Tricks Announcement -->
+            <div class="announcement-card announcement-tips h-100">
+                <div class="announcement-header">
+                    <h5 class="announcement-title">
+                        <span class="announcement-icon announcement-icon-tips">
+                            <i class="fas fa-lightbulb"></i>
+                        </span>
+                        Tips & Tricks
+                    </h5>
+                    <span class="announcement-date">May 9, 2025</span>
+                </div>
+                <div class="announcement-body">
+                    <p>Did you know you can use the Kanban board's drag and drop feature to quickly update task status? Try it out to boost your productivity!</p>
+                </div>
+                <div class="announcement-footer">
+                    <div class="announcement-author">
+                        <div class="announcement-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <span>Team Lead</span>
+                    </div>
+                    <div class="announcement-actions">
+                        <a href="#" class="announcement-action">
+                            <i class="fas fa-thumbs-up"></i>
+                            <span>15</span>
+                        </a>
+                        <a href="#" class="announcement-action">
+                            <i class="fas fa-comment"></i>
+                            <span>2</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Stats Section with Colorful Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card-projects">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon-projects">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <h3 class="stat-value">{{ total_projects }}</h3>
+                <p class="stat-label">Total Projects</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card-active">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon-active">
+                    <i class="fas fa-spinner"></i>
+                </div>
+                <h3 class="stat-value">{{ active_projects }}</h3>
+                <p class="stat-label">Active Projects</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card-completed">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon-completed">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="stat-value">{{ tasks_completed }}</h3>
+                <p class="stat-label">Tasks Completed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="stat-card stat-card-overdue">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon-overdue">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h3 class="stat-value">{{ overdue_tasks }}</h3>
+                <p class="stat-label">Overdue Tasks</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Enhanced Project Charts Section -->
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="dashboard-card h-100">
+            <div class="dashboard-card-header">
+                <h5 class="dashboard-card-title">
+                    <i class="fas fa-chart-pie me-2 text-primary"></i>
+                    Project Status
+                </h5>
+            </div>
+            <div class="dashboard-card-body">
+                <canvas id="projectChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Task Priority Distribution Chart -->
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="dashboard-card h-100">
+            <div class="dashboard-card-header">
+                <h5 class="dashboard-card-title">
+                    <i class="fas fa-signal me-2 text-danger"></i>
+                    Priority Distribution
+                </h5>
+            </div>
+            <div class="dashboard-card-body">
+                <canvas id="priorityChart" height="280"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activities Timeline -->
+    <div class="col-lg-4 col-md-12 mb-4">
+        <div class="dashboard-card h-100">
+            <div class="dashboard-card-header">
+                <h5 class="dashboard-card-title">
+                    <i class="fas fa-history me-2 text-info"></i>
+                    Recent Activity
+                </h5>
+            </div>
+            <div class="dashboard-card-body">
+                <ul class="timeline">
+                    {% for task in recent_tasks|slice:":3" %}
+                    <li class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content">
+                            <h6 class="timeline-title">{{ task.title }}</h6>
+                            <span class="timeline-time"><i class="fas fa-clock me-1"></i> {{ task.updated_at|date:"M d, h:i a" }}</span>
+                            <div>
+                                {% if task.status == 'completed' %}
+                                    <span class="timeline-badge bg-success">Completed</span>
+                                {% elif task.status == 'in_progress' %}
+                                    <span class="timeline-badge bg-primary">In Progress</span>
+                                {% elif task.status == 'review' %}
+                                    <span class="timeline-badge bg-warning">In Review</span>
+                                {% else %}
+                                    <span class="timeline-badge bg-secondary">To Do</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </li>
+                    {% empty %}
+                    <li class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <div class="timeline-content text-center py-3">
+                            <i class="fas fa-info-circle me-2"></i> No recent activity
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Project Progress -->
+<div class="row">
+    <div class="col-md-7 mb-4">
+        <!-- Tasks Section -->
+        <div class="dashboard-card h-100">
+            <div class="dashboard-card-header">
+                <h5 class="dashboard-card-title">
+                    <i class="fas fa-tasks me-2 text-success"></i>
+                    Recent Tasks
+                </h5>
+                <a href="{% url 'tasks:list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+            </div>
+            <div class="dashboard-card-body">
+                <!-- Task Search -->
+                <div class="task-search">
+                    <form method="get" action="{% url 'tasks:list' %}">
+                        <i class="fas fa-search"></i>
+                        <input type="text" name="q" class="form-control" placeholder="Search tasks...">
+                    </form>
+                </div>
+                
+                <!-- Task List -->
+                <div class="table-responsive">
+                    <table class="table tasks-table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Task</th>
+                                <th>Project</th>
+                                <th>Status</th>
+                                <th>Due Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in recent_tasks %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'tasks:detail' task.id %}" class="task-link">
+                                        {{ task.title }}
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </td>
+                                <td>{{ task.project.name }}</td>
+                                <td>
+                                    {% if task.status == 'completed' %}
+                                        <span class="badge task-badge bg-success">Completed</span>
+                                    {% elif task.status == 'in_progress' %}
+                                        <span class="badge task-badge bg-primary">In Progress</span>
+                                    {% elif task.status == 'review' %}
+                                        <span class="badge task-badge bg-warning">In Review</span>
+                                    {% else %}
+                                        <span class="badge task-badge bg-secondary">To Do</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if task.due_date and task.due_date < today %}
+                                        <span class="text-danger fw-bold"><i class="fas fa-exclamation-circle me-1"></i>{{ task.due_date }}</span>
+                                    {% else %}
+                                        <span class="text-muted">{{ task.due_date }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="fas fa-clipboard-list fa-3x mb-3 text-light"></i>
+                                        <p class="text-muted mb-0">No tasks found.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-5 mb-4">
+        <!-- Project Progress -->
+        <div class="dashboard-card h-100">
+            <div class="dashboard-card-header">
+                <h5 class="dashboard-card-title">
+                    <i class="fas fa-tachometer-alt me-2 text-primary"></i>
+                    Project Progress
+                </h5>
+            </div>
+            <div class="dashboard-card-body">
+                {% for project in recent_projects|slice:":5" %}
+                <div class="project-progress-item">
+                    <div class="project-title">
+                        <h6>{{ project.name }}</h6>
+                        <span class="percent">{{ project.get_completion_percentage }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar {% if project.get_completion_percentage < 30 %}progress-bar-low{% elif project.get_completion_percentage < 70 %}progress-bar-medium{% else %}progress-bar-high{% endif %}" 
+                             role="progressbar" 
+                             style="width: {{ project.get_completion_percentage }}%;" 
+                             aria-valuenow="{{ project.get_completion_percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <div class="progress-info">
+                        <div class="task-count">
+                            <i class="fas fa-check-circle text-success"></i>
+                            {{ project.get_completed_tasks_count }} completed
+                        </div>
+                        <div class="task-count">
+                            <i class="fas fa-spinner text-primary"></i>
+                            {{ project.get_active_tasks_count }} active
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <i class="fas fa-project-diagram fa-3x mb-3 text-light"></i>
+                    <p class="text-muted">No projects found.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Quick Actions -->
+<div class="quick-actions">
+    {% if can_create_project %}
+    <a href="{% url 'projects:create' %}" class="btn btn-primary" data-bs-toggle="tooltip" title="Create a new project">
+        <i class="fas fa-plus-circle me-2"></i> New Project
+    </a>
+    {% endif %}
+    
+    {% if can_create_task %}
+    <a href="{% url 'tasks:create' %}" class="btn btn-outline-success" data-bs-toggle="tooltip" title="Create a new task">
+        <i class="fas fa-tasks me-2"></i> New Task
+    </a>
+    {% endif %}
+    
+    <a href="{% url 'tasks:kanban' %}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Kanban board">
+        <i class="fas fa-columns me-2"></i> Kanban Board
+    </a>
+    
+    <a href="{% url 'tasks:calendar' %}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Task calendar">
+        <i class="fas fa-calendar-alt me-2"></i> Calendar
+    </a>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Tooltips
+        const tooltips = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltips.forEach(el => new bootstrap.Tooltip(el));
+
+        // Project Status Chart
+        const projectCtx = document.getElementById('projectChart').getContext('2d');
+        new Chart(projectCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Completed', 'In Progress', 'Overdue'],
+                datasets: [{
+                    data: [{{ completed_projects }}, {{ active_projects }}, {{ overdue_projects }}],
+                    backgroundColor: ['#06d6a0', '#4361ee', '#ef476f'],
+                    borderWidth: 0,
+                    borderRadius: 7,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                animation: {
+                    animateScale: true,
+                    animateRotate: true,
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: { 
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        padding: 15,
+                        cornerRadius: 8,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.raw || 0;
+                                const total = context.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                const percentage = Math.round((value / total) * 100);
+                                return `${label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Task Priority Distribution Chart
+        const priorityCtx = document.getElementById('priorityChart').getContext('2d');
+        new Chart(priorityCtx, {
+            type: 'polarArea',
+            data: {
+                labels: ['High', 'Medium', 'Low', 'None'],
+                datasets: [{
+                    data: [
+                        {{ tasks_high_priority|default:3 }}, 
+                        {{ tasks_medium_priority|default:7 }}, 
+                        {{ tasks_low_priority|default:4 }}, 
+                        {{ tasks_no_priority|default:2 }}
+                    ],
+                    backgroundColor: [
+                        'rgba(239, 71, 111, 0.7)', 
+                        'rgba(255, 209, 102, 0.7)', 
+                        'rgba(6, 214, 160, 0.7)', 
+                        'rgba(142, 202, 230, 0.7)'
+                    ],
+                    borderColor: [
+                        'rgb(239, 71, 111)', 
+                        'rgb(255, 209, 102)', 
+                        'rgb(6, 214, 160)', 
+                        'rgb(142, 202, 230)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        ticks: {
+                            display: false
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        angleLines: {
+                            color: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    }
+                },
+                animation: {
+                    animateRotate: true,
+                    animateScale: true,
+                    duration: 2000,
+                    easing: 'easeOutQuart'
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: {
+                                size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        padding: 15,
+                        cornerRadius: 8,
+                        titleFont: {
+                            size: 14,
+                            weight: 'bold'
+                        },
+                        bodyFont: {
+                            size: 13
+                        },
+                        displayColors: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.label + ' Priority: ' + context.raw + ' tasks';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+
+{% endblock %}

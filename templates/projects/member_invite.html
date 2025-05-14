@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Invite Members - Task Management{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'projects:list' %}" class="breadcrumb-link">Projects</a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'projects:detail' project.id %}" class="breadcrumb-link">{{ project.name }}</a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'projects:members' project.id %}" class="breadcrumb-link">Members</a>
+</li>
+<li class="breadcrumb-item">
+    <span class="breadcrumb-link">Invite Members</span>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">Invite Members to Project</h5>
+            </div>
+            <div class="card-body">
+                <p>Enter email addresses of users to invite to the project. Separate multiple emails with commas.</p>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="form-group mb-3">
+                        <label for="{{ form.emails.id_for_label }}" class="form-label">Email Addresses</label>
+                        {{ form.emails }}
+                        {% if form.emails.errors %}
+                            <div class="text-danger">
+                                {% for error in form.emails.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">{{ form.emails.help_text }}</div>
+                    </div>
+                    
+                    <div class="form-group mb-3">
+                        <label for="{{ form.role.id_for_label }}" class="form-label">Role</label>
+                        {{ form.role }}
+                        {% if form.role.errors %}
+                            <div class="text-danger">
+                                {% for error in form.role.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Only existing users can be added. If a user doesn't exist, they will be skipped.
+                    </div>
+                    
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-end mt-4">
+                        <a href="{% url 'projects:members' project.id %}" class="btn btn-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Invite Members</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

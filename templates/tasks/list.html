@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tasks - Task Management{% endblock %}
+{% block page_title %}Tasks{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'dashboard:index' %}" class="breadcrumb-link">Dashboard</a>
+</li>
+<li class="breadcrumb-item">
+    <span class="breadcrumb-link">Tasks</span>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Task List</h5>
+                <div>
+                    {% if can_create_task %}
+                    <a href="{% url 'tasks:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i> New Task
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'tasks:kanban' %}" class="btn btn-info ms-2">
+                        <i class="fas fa-columns"></i> Kanban View
+                    </a>
+                    <a href="{% url 'tasks:calendar' %}" class="btn btn-secondary ms-2">
+                        <i class="fas fa-calendar-alt"></i> Calendar View
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Project</th>
+                                <th>Assigned To</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Due Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for task in tasks %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'tasks:detail' task.id %}">{{ task.title }}</a>
+                                </td>
+                                <td>
+                                    <a href="{% url 'projects:detail' task.project.id %}">{{ task.project.name }}</a>
+                                </td>
+                                <td>
+                                    {% if task.assigned_to %}
+                                    <div class="d-flex align-items-center">
+                                        {% if task.assigned_to.userprofile.avatar %}
+                                        <img src="{{ task.assigned_to.userprofile.avatar.url }}" alt="{{ task.assigned_to.username }}" class="avatar me-2" style="width: 24px; height: 24px;">
+                                        {% else %}
+                                        <div class="avatar d-flex align-items-center justify-content-center bg-primary text-white me-2" style="width: 24px; height: 24px; font-size: 0.75rem;">
+                                            {{ task.assigned_to.username|first|upper }}
+                                        </div>
+                                        {% endif %}
+                                        <span>{{ task.assigned_to.get_full_name|default:task.assigned_to.username }}</span>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if task.priority == 'high' %}danger{% elif task.priority == 'medium' %}warning{% else %}info{% endif %}">
+                                        {{ task.get_priority_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if task.status == 'completed' %}success{% elif task.status == 'in_progress' %}primary{% elif task.status == 'review' %}warning{% else %}secondary{% endif %}">
+                                        {{ task.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if task.due_date %}
+                                    <span class="{% if task.is_overdue %}text-danger{% endif %}">
+                                        {{ task.due_date }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">No due date</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" id="taskActions{{ task.id }}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="taskActions{{ task.id }}">
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'tasks:detail' task.id %}">
+                                                    <i class="fas fa-eye me-2"></i> View
+                                                </a>
+                                            </li>
+                                            {% if can_create_task or task.assigned_to == user %}
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'tasks:edit' task.id %}">
+                                                    <i class="fas fa-edit me-2"></i> Edit
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                            
+                                            {% if is_admin or can_manage_projects or task.created_by == user %}
+                                            <li>
+                                                <a class="dropdown-item text-danger" href="{% url 'tasks:delete' task.id %}" data-confirm="Are you sure you want to delete this task?">
+                                                    <i class="fas fa-trash-alt me-2"></i> Delete
+                                                </a>
+                                            </li>
+                                            {% endif %}
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-clipboard-list fa-3x mb-3 text-muted"></i>
+                                        <h5>No Tasks Found</h5>
+                                        <p class="text-muted">You don't have any tasks yet.</p>
+                                        {% if can_create_task %}
+                                        <a href="{% url 'tasks:create' %}" class="btn btn-primary mt-3">
+                                            <i class="fas fa-plus-circle"></i> Create Your First Task
+                                        </a>
+                                        {% else %}
+                                        <p class="text-muted">Please contact a project manager to assign tasks to you.</p>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                {% if is_paginated %}
+                <nav aria-label="Page navigation" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                        {% else %}
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight overdue tasks
+        const dueDates = document.querySelectorAll('.is-overdue');
+        dueDates.forEach(date => {
+            date.classList.add('text-danger', 'fw-bold');
+        });
+    });
+</script>
+{% endblock %}

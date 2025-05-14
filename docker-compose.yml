@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # Web application service
+  web:
+    build: .
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - DEBUG=0
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - SECRET_KEY=${SECRET_KEY}
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+    depends_on:
+      - db
+    volumes:
+      - ./media:/app/media
+      - ./static:/app/static
+      - ./staticfiles:/app/staticfiles
+    command: >
+      sh -c "python manage.py migrate &&
+             daphne -b 0.0.0.0 -p 5000 task_management.asgi:application"
+             
+  # Scheduler service for periodic tasks
+  scheduler:
+    build: .
+    restart: always
+    environment:
+      - DEBUG=0
+      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - SECRET_KEY=${SECRET_KEY}
+    depends_on:
+      - db
+      - web
+    command: "./check_deadlines.sh --days=3 --interval=21600"
+
+  # PostgreSQL database service
+  db:
+    image: postgres:13
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5433:5432"
+
+volumes:
+  postgres_data:

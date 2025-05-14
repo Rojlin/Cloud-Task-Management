@@ -1,0 +1,363 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Task Analytics{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .analytics-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        height: 100%;
+        margin-bottom: 20px;
+    }
+    
+    .analytics-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    
+    .stat-card {
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        text-transform: uppercase;
+    }
+    
+    .task-trend-chart {
+        height: 400px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'analytics:dashboard' %}">Analytics</a></li>
+                    <li class="breadcrumb-item active">Tasks</li>
+                </ol>
+            </nav>
+            <h1 class="display-4 mb-0">Task Analytics</h1>
+            <p class="text-muted">Analyze task metrics and performance</p>
+            <hr>
+        </div>
+    </div>
+    
+    <!-- Task Stats Summary -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="analytics-card bg-white stat-card">
+                <div class="stat-icon text-primary mb-3">
+                    <i class="fas fa-tasks fa-3x"></i>
+                </div>
+                <h2 class="stat-value">{{ total_tasks }}</h2>
+                <p class="stat-label">Total Tasks</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="analytics-card bg-white stat-card">
+                <div class="stat-icon text-success mb-3">
+                    <i class="fas fa-check-circle fa-3x"></i>
+                </div>
+                <h2 class="stat-value">{{ completed_tasks }}</h2>
+                <p class="stat-label">Completed</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="analytics-card bg-white stat-card">
+                <div class="stat-icon text-danger mb-3">
+                    <i class="fas fa-exclamation-triangle fa-3x"></i>
+                </div>
+                <h2 class="stat-value">{{ overdue_tasks }}</h2>
+                <p class="stat-label">Overdue</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="analytics-card bg-white stat-card">
+                <div class="stat-icon text-info mb-3">
+                    <i class="fas fa-clock fa-3x"></i>
+                </div>
+                <h2 class="stat-value">{{ avg_completion_time|default:"N/A" }}</h2>
+                <p class="stat-label">Avg. Days to Complete</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Task Distribution Charts -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Tasks by Status</h5>
+                <div class="chart-container">
+                    <canvas id="taskStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Tasks by Priority</h5>
+                <div class="chart-container">
+                    <canvas id="taskPriorityChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Task Completion Trend -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Task Completion Trend (Last 6 Months)</h5>
+                <div class="chart-container task-trend-chart">
+                    <canvas id="completionTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Task Completion Time -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Average Completion Time Trend</h5>
+                <div class="chart-container task-trend-chart">
+                    <canvas id="completionTimeChart"></canvas>
+                </div>
+                <div class="text-center mt-3">
+                    <p class="text-muted">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        This chart shows the average time (in days) it takes to complete tasks over time
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Task Status Chart
+    fetch('{% url "analytics:tasks_by_status_chart" %}')
+        .then(response => response.json())
+        .then(data => {
+            const statusCtx = document.getElementById('taskStatusChart').getContext('2d');
+            const statusChart = new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading tasks by status chart:', error));
+    
+    // Task Priority Chart
+    fetch('{% url "analytics:tasks_by_priority_chart" %}')
+        .then(response => response.json())
+        .then(data => {
+            const priorityCtx = document.getElementById('taskPriorityChart').getContext('2d');
+            const priorityChart = new Chart(priorityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(255, 205, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 205, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading tasks by priority chart:', error));
+    
+    // Task Completion Trend Chart
+    const months = [{% for item in completion_trend %}'{{ item.month|date:"M Y" }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+    const completionData = [{% for item in completion_trend %}{{ item.count }}{% if not forloop.last %}, {% endif %}{% endfor %}];
+    
+    const trendCtx = document.getElementById('completionTrendChart').getContext('2d');
+    const trendChart = new Chart(trendCtx, {
+        type: 'line',
+        data: {
+            labels: months,
+            datasets: [{
+                label: 'Completed Tasks',
+                data: completionData,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+    
+    // Task Completion Time Trend Chart
+    fetch('{% url "analytics:completion_time_trend_chart" %}')
+        .then(response => response.json())
+        .then(data => {
+            const timeCtx = document.getElementById('completionTimeChart').getContext('2d');
+            const timeChart = new Chart(timeCtx, {
+                type: 'line',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Average Days to Complete',
+                        data: data.data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: 'rgba(54, 162, 235, 1)',
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Average Days',
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' days';
+                                }
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Week Starting',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    return 'Week of ' + tooltipItems[0].label;
+                                },
+                                label: function(context) {
+                                    return 'Average: ' + context.raw + ' days to complete';
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+            
+            // Add a helpful hint below the chart
+            const chartContainer = document.querySelector('.task-trend-chart');
+            const hint = document.createElement('div');
+            hint.innerHTML = '<i class="fas fa-info-circle text-muted"></i> This chart shows the average time (in days) it takes to complete tasks over time';
+            hint.className = 'text-center text-muted mt-3';
+            chartContainer.appendChild(hint);
+        })
+        .catch(error => console.error('Error loading completion time chart:', error));
+});
+</script>
+{% endblock %}

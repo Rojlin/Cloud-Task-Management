@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Project - Task Management{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item">
+    <a href="{% url 'projects:list' %}" class="breadcrumb-link">Projects</a>
+</li>
+<li class="breadcrumb-item">
+    <a href="{% url 'projects:detail' project.id %}" class="breadcrumb-link">{{ project.name }}</a>
+</li>
+<li class="breadcrumb-item">
+    <span class="breadcrumb-link">Delete</span>
+</li>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title text-danger">Delete Project</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Warning:</strong> This action cannot be undone.
+                </div>
+                
+                <p>Are you sure you want to delete the project <strong>{{ project.name }}</strong>?</p>
+                
+                <p>This will delete:</p>
+                <ul>
+                    <li>All tasks associated with this project</li>
+                    <li>All task comments and attachments</li>
+                    <li>All project memberships</li>
+                    <li>All project statistics and data</li>
+                </ul>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="d-flex justify-content-end">
+                        <a href="{% url 'projects:detail' project.id %}" class="btn btn-secondary me-2">Cancel</a>
+                        <button type="submit" class="btn btn-danger">Delete Project</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

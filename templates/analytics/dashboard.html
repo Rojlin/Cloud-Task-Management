@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load analytics_filters %}
+
+{% block title %}Analytics Dashboard{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+<style>
+    .analytics-card {
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        height: 100%;
+    }
+    
+    .analytics-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .analytics-icon {
+        font-size: 2rem;
+        margin-bottom: 10px;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .chart-container {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+    
+    .progress-circle {
+        position: relative;
+        width: 120px;
+        height: 120px;
+        margin: auto;
+    }
+    
+    .progress-circle svg {
+        transform: rotate(-90deg);
+    }
+    
+    .progress-circle circle {
+        fill: none;
+        stroke-width: 10;
+    }
+    
+    .progress-circle .bg {
+        stroke: #eee;
+    }
+    
+    .progress-circle .progress {
+        stroke: #4caf50;
+        transition: stroke-dashoffset 0.5s;
+    }
+    
+    .progress-percentage {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-4 mb-0">Analytics Dashboard</h1>
+            <p class="text-muted">Track and analyze your team's performance metrics</p>
+            <hr>
+        </div>
+    </div>
+    
+    <!-- Key Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="analytics-card bg-white p-4 text-center">
+                <div class="analytics-icon text-primary">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <h2 class="stat-number">{{ total_projects }}</h2>
+                <p class="stat-label mb-0">Total Projects</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="analytics-card bg-white p-4 text-center">
+                <div class="analytics-icon text-success">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <h2 class="stat-number">{{ total_tasks }}</h2>
+                <p class="stat-label mb-0">Total Tasks</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="analytics-card bg-white p-4 text-center">
+                <div class="analytics-icon text-info">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2 class="stat-number">{{ completed_tasks }}</h2>
+                <p class="stat-label mb-0">Completed Tasks</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="analytics-card bg-white p-4 text-center">
+                <div class="analytics-icon text-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h2 class="stat-number">{{ overdue_tasks }}</h2>
+                <p class="stat-label mb-0">Overdue Tasks</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <!-- Progress Circle -->
+        <div class="col-md-4">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title text-center mb-4">Overall Completion Rate</h5>
+                <div class="progress-circle">
+                    <svg width="120" height="120" xmlns="http://www.w3.org/2000/svg">
+                        <circle class="bg" cx="60" cy="60" r="50" />
+                        <circle class="progress" cx="60" cy="60" r="50" 
+                               stroke-dasharray="314.16" 
+                               stroke-dashoffset="{% with remaining=100|subtract:completion_percentage %}{% with offset_val=314.16|multiply:remaining %}{{ offset_val|divide:100 }}{% endwith %}{% endwith %}" />
+                    </svg>
+                    <div class="progress-percentage">{{ completion_percentage }}%</div>
+                </div>
+                <p class="text-center mt-3">{{ completed_tasks }} of {{ total_tasks }} tasks completed</p>
+            </div>
+        </div>
+        
+        <!-- Tasks by Status Chart -->
+        <div class="col-md-8">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Tasks by Status</h5>
+                <div class="chart-container">
+                    <canvas id="tasksStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <!-- Tasks by Priority Chart -->
+        <div class="col-md-6">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Tasks by Priority</h5>
+                <div class="chart-container">
+                    <canvas id="tasksPriorityChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Reports -->
+        <div class="col-md-6">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Recent Reports</h5>
+                {% if recent_reports %}
+                <div class="list-group">
+                    {% for report in recent_reports %}
+                    <a href="{% url 'analytics:report_detail' report.id %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ report.title }}</h6>
+                            <small>{{ report.created_at|date:"M d, Y" }}</small>
+                        </div>
+                        <p class="mb-1 text-truncate">{{ report.description|default:"No description" }}</p>
+                        <small>{{ report.report_type.name }} | {{ report.format|upper }}</small>
+                    </a>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'analytics:report_list' %}" class="btn btn-sm btn-outline-primary">View All Reports</a>
+                    <a href="{% url 'analytics:report_create' %}" class="btn btn-sm btn-primary">Create New Report</a>
+                </div>
+                {% else %}
+                <div class="alert alert-info mb-0">
+                    <p class="mb-2">No reports generated yet.</p>
+                    <a href="{% url 'analytics:report_create' %}" class="btn btn-sm btn-primary">Create Your First Report</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Analytics Navigation -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="analytics-card bg-white p-4">
+                <h5 class="card-title mb-4">Explore Analytics</h5>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'analytics:project_analytics' %}" class="btn btn-outline-primary btn-lg btn-block">
+                            <i class="fas fa-project-diagram mr-2"></i> Project Analytics
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'analytics:task_analytics' %}" class="btn btn-outline-success btn-lg btn-block">
+                            <i class="fas fa-tasks mr-2"></i> Task Analytics
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'analytics:productivity_analytics' %}" class="btn btn-outline-info btn-lg btn-block">
+                            <i class="fas fa-user-clock mr-2"></i> Productivity
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <a href="{% url 'analytics:report_list' %}" class="btn btn-outline-secondary btn-lg btn-block">
+                            <i class="fas fa-file-alt mr-2"></i> Reports
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Load Tasks by Status Chart
+    fetch('{% url "analytics:tasks_by_status_chart" %}')
+        .then(response => response.json())
+        .then(data => {
+            const statusCtx = document.getElementById('tasksStatusChart').getContext('2d');
+            const statusChart = new Chart(statusCtx, {
+                type: 'bar',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        label: 'Tasks by Status',
+                        data: data.data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)',
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading tasks by status chart:', error));
+    
+    // Load Tasks by Priority Chart
+    fetch('{% url "analytics:tasks_by_priority_chart" %}')
+        .then(response => response.json())
+        .then(data => {
+            const priorityCtx = document.getElementById('tasksPriorityChart').getContext('2d');
+            const priorityChart = new Chart(priorityCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.labels,
+                    datasets: [{
+                        data: data.data,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(255, 205, 86, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(255, 159, 64, 1)',
+                            'rgba(255, 205, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        })
+        .catch(error => console.error('Error loading tasks by priority chart:', error));
+});
+</script>
+{% endblock %}
