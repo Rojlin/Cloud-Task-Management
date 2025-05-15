@@ -9,10 +9,9 @@ services:
       - "5000:5000"
     environment:
       - DEBUG=0
-      - PGDATABASE=True
+      - PGDATABASE=${POSTGRES_DB}
       - PGUSER=${POSTGRES_USER}
       - PGPASSWORD=${POSTGRES_PASSWORD}
-      - PGPASSWORD=${POSTGRES_DB}
       - PGHOST=db
       - PORT=5432
       - SECRET_KEY=${SECRET_KEY}
@@ -33,10 +32,9 @@ services:
     restart: always
     environment:
       - DEBUG=0
-      - PGDATABASE=True
-      - PGUSER={POSTGRES_USER}
-      - PGPASSWORD={POSTGRES_PASSWORD}
-      - PGPASSWORD={POSTGRES_DB}
+      - PGDATABASE=${POSTGRES_DB}
+      - PGUSER=${POSTGRES_USER}
+      - PGPASSWORD=${POSTGRES_PASSWORD}
       - PGHOST=db
       - PORT=5432
       - SECRET_KEY=${SECRET_KEY}
