@@ -10,9 +10,9 @@ services:
     environment:
       - DEBUG=0
       - PGDATABASE=True
-      - PGUSER={POSTGRES_USER}
-      - PGPASSWORD={POSTGRES_PASSWORD}
-      - PGPASSWORD={POSTGRES_DB}
+      - PGUSER=${POSTGRES_USER}
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+      - PGPASSWORD=${POSTGRES_DB}
       - PGHOST=db
       - PORT=5432
       - SECRET_KEY=${SECRET_KEY}
