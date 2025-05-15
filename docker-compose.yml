@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Web application service
   web:
@@ -45,7 +43,7 @@ services:
 
   # PostgreSQL database service
   db:
-    image: postgres:13
+    image: postgres:14
     restart: always
     volumes:
       - postgres_data:/var/lib/postgresql/data/
