@@ -4,6 +4,7 @@ from apps.projects.models import Project, ProjectMember
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
+
 User = get_user_model()
 
 class TaskForm(forms.ModelForm):
@@ -43,7 +44,9 @@ class TaskForm(forms.ModelForm):
             self.fields['assigned_to'].queryset = project.members.all()
         else:
             # Initially, don't show any assignees until a project is selected
-            self.fields['assigned_to'].queryset = User.objects.none()
+            self.fields['assigned_to'].queryset = (
+            User.objects.filter(is_active=True).order_by('username')
+            )
 
 class TaskCommentForm(forms.ModelForm):
     class Meta:
@@ -92,3 +95,6 @@ class TaskFilterForm(forms.Form):
                 self.fields['assigned_to'].queryset = User.objects.filter(
                     Q(created_projects__in=user_projects) | Q(projects__in=user_projects)
                 ).distinct()
+                self.fields['assigned_to'].queryset = (
+                User.objects.filter(is_active=True).order_by('username')
+        )
