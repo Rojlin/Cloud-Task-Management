@@ -1,0 +1,54 @@
+/* CSS to fix horizontal display of Kanban board */
+
+/* Force row to display horizontally without wrapping */
+.row.flex-nowrap {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding-bottom: 20px;
+  width: 100%;
+  margin-right: 0;
+  margin-left: 0;
+}
+
+/* Force columns to maintain fixed width and prevent stacking */
+.col-md-3.flex-shrink-0 {
+  flex: 0 0 300px !important;
+  width: 300px !important;
+  min-width: 300px !important;
+  max-width: 300px !important;
+}
+
+/* Make sure card columns are tall enough */
+.kanban-column {
+  min-height: 500px;
+  height: 100%;
+}
+
+/* Add scrollbar to column content */
+.card-body {
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Make sure task cards are properly styled */
+.task-card {
+  margin-bottom: 10px;
+  cursor: grab;
+}
+
+/* Make sure column headers stay at the top */
+.column-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Force horizontal scrolling for better mobile experience */
+@media (max-width: 767.98px) {
+  .row.flex-nowrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}

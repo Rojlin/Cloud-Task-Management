@@ -824,6 +824,22 @@
     </div>
 </div>
 
+<!-- Enhanced Quick Actions -->
+<div class="quick-actions">
+    <a href="{% url 'projects:create' %}" class="btn btn-primary" data-bs-toggle="tooltip" title="Create a new project">
+        <i class="fas fa-plus-circle me-2"></i> New Project
+    </a>
+    <a href="{% url 'tasks:create' %}" class="btn btn-outline-success" data-bs-toggle="tooltip" title="Create a new task">
+        <i class="fas fa-tasks me-2"></i> New Task
+    </a>
+    <a href="{% url 'tasks:kanban' %}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Kanban board">
+        <i class="fas fa-columns me-2"></i> Kanban Board
+    </a>
+    <a href="{% url 'tasks:calendar' %}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Task calendar">
+        <i class="fas fa-calendar-alt me-2"></i> Calendar
+    </a>
+</div>
+
 <!-- Pinned Notes and Announcements Section -->
 <div class="announcements-section">
     <div class="row">
@@ -1138,7 +1154,10 @@
         </div>
     </div>
     
-    <div class="col-md-5 mb-4">
+
+</div>
+
+<div class="row">
         <!-- Project Progress -->
         <div class="dashboard-card h-100">
             <div class="dashboard-card-header">
@@ -1187,21 +1206,6 @@
     </div>
 </div>
 
-<!-- Enhanced Quick Actions -->
-<div class="quick-actions">
-    <a href="{% url 'projects:create' %}" class="btn btn-primary" data-bs-toggle="tooltip" title="Create a new project">
-        <i class="fas fa-plus-circle me-2"></i> New Project
-    </a>
-    <a href="{% url 'tasks:create' %}" class="btn btn-outline-success" data-bs-toggle="tooltip" title="Create a new task">
-        <i class="fas fa-tasks me-2"></i> New Task
-    </a>
-    <a href="{% url 'tasks:kanban' %}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Kanban board">
-        <i class="fas fa-columns me-2"></i> Kanban Board
-    </a>
-    <a href="{% url 'tasks:calendar' %}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Task calendar">
-        <i class="fas fa-calendar-alt me-2"></i> Calendar
-    </a>
-</div>
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

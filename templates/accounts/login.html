@@ -3,11 +3,106 @@
 {% block title %}Login - Task Management{% endblock %}
 
 {% block auth_content %}
+<style>
+    .auth-container {
+        min-height: 100vh;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        padding: 2rem;
+    }
+    
+    .auth-card {
+        background: white;
+        max-width: 400px;
+        width: 100%;
+        margin: 0 auto;
+        padding: 2.5rem;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .auth-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .auth-logo {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #4a5568;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .auth-logo i {
+        color: #667eea;
+        margin-right: 0.5rem;
+    }
+    
+    .auth-subtitle {
+        text-align: center;
+        color: #718096;
+        margin-bottom: 2rem;
+    }
+    
+    .auth-form .form-control {
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        border: 2px solid #e2e8f0;
+        transition: border-color 0.3s ease;
+    }
+    
+    .auth-form .form-control:focus {
+        border-color: #667eea;
+        box-shadow: none;
+    }
+    
+    .auth-form label {
+        font-weight: 600;
+        color: #4a5568;
+        margin-bottom: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: #667eea;
+        border: none;
+        padding: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-primary:hover {
+        background: #764ba2;
+    }
+    
+    .auth-footer {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: #718096;
+    }
+    
+    .auth-link {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 600;
+    }
+    
+    .auth-link:hover {
+        color: #764ba2;
+    }
+    
+    .alert {
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
             <div class="auth-logo">
-                <i class="fas fa-tasks"></i> TaskManager
+                <i class="fas fa-tasks"></i>TaskManager
             </div>
             <p class="auth-subtitle">Sign in to your account</p>
         </div>
@@ -24,11 +119,11 @@
         <form method="post" class="auth-form">
             {% csrf_token %}
             
-            <div class="form-group mb-3">
+            <div class="form-group mb-4">
                 <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
                 {{ form.username }}
                 {% if form.username.errors %}
-                    <div class="text-danger">
+                    <div class="text-danger mt-1">
                         {% for error in form.username.errors %}
                             {{ error }}
                         {% endfor %}
@@ -36,11 +131,11 @@
                 {% endif %}
             </div>
             
-            <div class="form-group mb-3">
+            <div class="form-group mb-4">
                 <label for="{{ form.password.id_for_label }}" class="form-label">Password</label>
                 {{ form.password }}
                 {% if form.password.errors %}
-                    <div class="text-danger">
+                    <div class="text-danger mt-1">
                         {% for error in form.password.errors %}
                             {{ error }}
                         {% endfor %}
@@ -56,7 +151,7 @@
                 </div>
             {% endif %}
             
-            <div class="d-grid">
+            <div class="d-grid mb-3">
                 <button type="submit" class="btn btn-primary">Sign In</button>
             </div>
         </form>

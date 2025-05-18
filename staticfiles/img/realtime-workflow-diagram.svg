@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="900" height="600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="900" height="600" fill="#f8f9fa" />
+  
+  <!-- Title -->
+  <text x="450" y="40" font-family="Arial" font-size="24" text-anchor="middle" font-weight="bold">CollaboraSync Real-Time Communication Workflows</text>
+  
+  <!-- WebSocket Connection Flow -->
+  <rect x="50" y="70" width="800" height="170" rx="10" ry="10" fill="#e8eaf6" stroke="#3949ab" stroke-width="2" />
+  <text x="450" y="90" font-family="Arial" font-size="18" text-anchor="middle" font-weight="bold">WebSocket Connection Flow</text>
+  
+  <!-- Client -->
+  <rect x="100" y="110" width="200" height="100" rx="5" ry="5" fill="#c5cae9" stroke="#3949ab" stroke-width="1" />
+  <text x="200" y="130" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">Client Browser</text>
+  <text x="200" y="155" font-family="Arial" font-size="12" text-anchor="middle">1. Authentication</text>
+  <text x="200" y="175" font-family="Arial" font-size="12" text-anchor="middle">2. Establish WebSocket</text>
+  <text x="200" y="195" font-family="Arial" font-size="12" text-anchor="middle">3. Subscribe to channels</text>
+  
+  <!-- Daphne ASGI Server -->
+  <rect x="400" y="110" width="120" height="100" rx="5" ry="5" fill="#c5cae9" stroke="#3949ab" stroke-width="1" />
+  <text x="460" y="155" font-family="Arial" font-size="14" text-anchor="middle">Daphne</text>
+  <text x="460" y="175" font-family="Arial" font-size="14" text-anchor="middle">ASGI Server</text>
+  
+  <!-- Django Channels -->
+  <rect x="600" y="110" width="200" height="100" rx="5" ry="5" fill="#c5cae9" stroke="#3949ab" stroke-width="1" />
+  <text x="700" y="130" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">Django Channels</text>
+  <text x="700" y="155" font-family="Arial" font-size="12" text-anchor="middle">1. Consumer Authentication</text>
+  <text x="700" y="175" font-family="Arial" font-size="12" text-anchor="middle">2. Group Assignment</text>
+  <text x="700" y="195" font-family="Arial" font-size="12" text-anchor="middle">3. Event Dispatching</text>
+  
+  <!-- Arrows -->
+  <line x1="300" y1="160" x2="400" y2="160" stroke="#3949ab" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="520" y1="160" x2="600" y2="160" stroke="#3949ab" stroke-width="2" marker-end="url(#arrowhead)" />
+  
+  <!-- Notification Flow -->
+  <rect x="50" y="260" width="800" height="150" rx="10" ry="10" fill="#fce4ec" stroke="#c2185b" stroke-width="2" />
+  <text x="450" y="280" font-family="Arial" font-size="18" text-anchor="middle" font-weight="bold">Real-Time Notification Workflow</text>
+  
+  <!-- System Event -->
+  <rect x="80" y="310" width="120" height="80" rx="5" ry="5" fill="#f8bbd0" stroke="#c2185b" stroke-width="1" />
+  <text x="140" y="335" font-family="Arial" font-size="14" text-anchor="middle">System Event</text>
+  <text x="140" y="355" font-family="Arial" font-size="12" text-anchor="middle">(Task Assignment,</text>
+  <text x="140" y="375" font-family="Arial" font-size="12" text-anchor="middle">Comment, etc.)</text>
+  
+  <!-- Create Notification -->
+  <rect x="270" y="310" width="120" height="80" rx="5" ry="5" fill="#f8bbd0" stroke="#c2185b" stroke-width="1" />
+  <text x="330" y="335" font-family="Arial" font-size="14" text-anchor="middle">Create</text>
+  <text x="330" y="355" font-family="Arial" font-size="14" text-anchor="middle">Notification</text>
+  <text x="330" y="375" font-family="Arial" font-size="12" text-anchor="middle">Database Record</text>
+  
+  <!-- Channel Layer -->
+  <rect x="460" y="310" width="120" height="80" rx="5" ry="5" fill="#f8bbd0" stroke="#c2185b" stroke-width="1" />
+  <text x="520" y="335" font-family="Arial" font-size="14" text-anchor="middle">Send to</text>
+  <text x="520" y="355" font-family="Arial" font-size="14" text-anchor="middle">Channel Layer</text>
+  <text x="520" y="375" font-family="Arial" font-size="12" text-anchor="middle">Target User Group</text>
+  
+  <!-- Client Notification -->
+  <rect x="650" y="310" width="120" height="80" rx="5" ry="5" fill="#f8bbd0" stroke="#c2185b" stroke-width="1" />
+  <text x="710" y="335" font-family="Arial" font-size="14" text-anchor="middle">Client</text>
+  <text x="710" y="355" font-family="Arial" font-size="14" text-anchor="middle">Notification</text>
+  <text x="710" y="375" font-family="Arial" font-size="12" text-anchor="middle">Browser Alert</text>
+  
+  <!-- Arrows -->
+  <line x1="200" y1="350" x2="270" y2="350" stroke="#c2185b" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="390" y1="350" x2="460" y2="350" stroke="#c2185b" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="580" y1="350" x2="650" y2="350" stroke="#c2185b" stroke-width="2" marker-end="url(#arrowhead)" />
+  
+  <!-- Chat Communication Flow -->
+  <rect x="50" y="430" width="800" height="150" rx="10" ry="10" fill="#e0f7fa" stroke="#00838f" stroke-width="2" />
+  <text x="450" y="450" font-family="Arial" font-size="18" text-anchor="middle" font-weight="bold">Real-Time Chat Communication</text>
+  
+  <!-- User 1 -->
+  <rect x="80" y="480" width="120" height="80" rx="40" ry="40" fill="#b2ebf2" stroke="#00838f" stroke-width="1" />
+  <text x="140" y="525" font-family="Arial" font-size="14" text-anchor="middle">User 1</text>
+  
+  <!-- Chat Room -->
+  <rect x="290" y="480" width="320" height="80" rx="5" ry="5" fill="#80deea" stroke="#00838f" stroke-width="1" />
+  <text x="450" y="500" font-family="Arial" font-size="16" text-anchor="middle" font-weight="bold">Chat Room</text>
+  <text x="450" y="525" font-family="Arial" font-size="12" text-anchor="middle">WebSocket Group: "chat_room_123"</text>
+  <text x="450" y="545" font-family="Arial" font-size="12" text-anchor="middle">Real-time message broadcasting</text>
+  
+  <!-- User 2 -->
+  <rect x="700" y="480" width="120" height="80" rx="40" ry="40" fill="#b2ebf2" stroke="#00838f" stroke-width="1" />
+  <text x="760" y="525" font-family="Arial" font-size="14" text-anchor="middle">User 2</text>
+  
+  <!-- Arrows -->
+  <line x1="200" y1="510" x2="290" y2="510" stroke="#00838f" stroke-width="2" marker-end="url(#arrowhead)" />
+  <line x1="610" y1="510" x2="700" y2="510" stroke="#00838f" stroke-width="2" marker-end="url(#arrowhead)" />
+  <path d="M 200,530 C 230,560 660,560 700,530" stroke="#00838f" stroke-width="2" fill="none" stroke-dasharray="5,5" marker-end="url(#arrowhead)" />
+  
+  <!-- Arrowhead marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#000" />
+    </marker>
+  </defs>
+  
+  <!-- Legend -->
+  <line x1="770" y1="580" x2="800" y2="580" stroke="#00838f" stroke-width="2" stroke-dasharray="5,5" />
+  <text x="760" y="580" font-family="Arial" font-size="12" text-anchor="end">Asynchronous Communication</text>
+</svg>

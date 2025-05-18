@@ -809,125 +809,38 @@
         </div>
     </div>
 </div>
-
-<!-- Pinned Notes and Announcements Section -->
-<!-- Pinned Notes and Announcements Section -->
-<div class="announcements-section">
-    <!-- Unified Row for All Three Cards -->
-    <div class="row row-horizontal">
-        <!-- Company Announcement -->
-        <div class="col-md-4 mb-3">
-            <div class="announcement-card announcement-company h-100">
-                <div class="announcement-header">
-                    <h5 class="announcement-title">
-                        <span class="announcement-icon announcement-icon-company">
-                            <i class="fas fa-bullhorn"></i>
-                        </span>
-                        Company Announcement
-                    </h5>
-                    <span class="announcement-date">May 11, 2025</span>
-                </div>
-                <div class="announcement-body">
-                    <p>Our company has been recognized as one of the top 50 tech workplaces! We're planning a celebration event next Friday. Details to follow.</p>
-                </div>
-                <div class="announcement-footer">
-                    <div class="announcement-author">
-                        <div class="announcement-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <span>Admin</span>
-                    </div>
-                    <div class="announcement-actions">
-                        <a href="#" class="announcement-action">
-                            <i class="fas fa-thumbs-up"></i>
-                            <span>12</span>
-                        </a>
-                        <a href="#" class="announcement-action">
-                            <i class="fas fa-comment"></i>
-                            <span>5</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Project Update -->
-        <div class="col-md-4 mb-3">
-            <div class="announcement-card announcement-project h-100">
-                <div class="announcement-header">
-                    <h5 class="announcement-title">
-                        <span class="announcement-icon announcement-icon-project">
-                            <i class="fas fa-clipboard-list"></i>
-                        </span>
-                        Project Update
-                    </h5>
-                    <span class="announcement-date">May 10, 2025</span>
-                </div>
-                <div class="announcement-body">
-                    <p>The "Website Redesign" project has entered its final phase. All tasks should be completed by May 20th. Please update your progress daily.</p>
-                </div>
-                <div class="announcement-footer">
-                    <div class="announcement-author">
-                        <div class="announcement-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <span>Project Manager</span>
-                    </div>
-                    <div class="announcement-actions">
-                        <a href="#" class="announcement-action">
-                            <i class="fas fa-thumbs-up"></i>
-                            <span>8</span>
-                        </a>
-                        <a href="#" class="announcement-action">
-                            <i class="fas fa-comment"></i>
-                            <span>3</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tips & Tricks -->
-        <div class="col-md-4 mb-3">
-            <div class="announcement-card announcement-tips h-100">
-                <div class="announcement-header">
-                    <h5 class="announcement-title">
-                        <span class="announcement-icon announcement-icon-tips">
-                            <i class="fas fa-lightbulb"></i>
-                        </span>
-                        Tips & Tricks
-                    </h5>
-                    <span class="announcement-date">May 9, 2025</span>
-                </div>
-                <div class="announcement-body">
-                    <p>Did you know you can use the Kanban board's drag and drop feature to quickly update task status? Try it out to boost your productivity!</p>
-                </div>
-                <div class="announcement-footer">
-                    <div class="announcement-author">
-                        <div class="announcement-avatar">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <span>Team Lead</span>
-                    </div>
-                    <div class="announcement-actions">
-                        <a href="#" class="announcement-action">
-                            <i class="fas fa-thumbs-up"></i>
-                            <span>15</span>
-                        </a>
-                        <a href="#" class="announcement-action">
-                            <i class="fas fa-comment"></i>
-                            <span>2</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+<!-- Enhanced Quick Actions -->
+<div class="quick-actions m-2">
+    {% if can_create_project %}
+    <a href="{% url 'projects:create' %}" class="btn btn-primary" data-bs-toggle="tooltip" title="Create a new project">
+        <i class="fas fa-plus-circle me-2"></i> New Project
+    </a>
+    {% endif %}
+    
+    {% if can_create_task %}
+    <a href="{% url 'tasks:create' %}" class="btn btn-outline-success" data-bs-toggle="tooltip" title="Create a new task">
+        <i class="fas fa-tasks me-2"></i> New Task
+    </a>
+    {% endif %}
+    
+    <a href="{% url 'tasks:kanban' %}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Kanban board">
+        <i class="fas fa-columns me-2"></i> Kanban Board
+    </a>
+    
+    <a href="{% url 'tasks:calendar' %}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Task calendar">
+        <i class="fas fa-calendar-alt me-2"></i> Calendar
+    </a>
 </div>
 
 <!-- Enhanced Stats Section with Colorful Cards -->
-<div class="row row-horizontal g-4 mb-4">
-    <div class="col-sm-6 col-xl-3">
+<div class="dashboard-card-header">
+	<h5 class="dashboard-card-title">
+		<i class="fas fa-history me-2 text-info"></i>
+		Project Analytics
+	</h5>
+</div>
+<div class="row row-horizontal g-4 mb-4 stats-grid">
+    <div class="col-lg-3 col-md-6 col-xl-3">
         <div class="stat-card stat-card-projects">
             <div class="stat-card-content">
                 <div class="stat-icon stat-icon-projects">
@@ -938,7 +851,7 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-lg-3 col-md-6 col-xl-3">
         <div class="stat-card stat-card-active">
             <div class="stat-card-content">
                 <div class="stat-icon stat-icon-active">
@@ -949,7 +862,7 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-lg-3 col-md-6 col-xl-3">
         <div class="stat-card stat-card-completed">
             <div class="stat-card-content">
                 <div class="stat-icon stat-icon-completed">
@@ -960,7 +873,7 @@
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-lg-3 col-md-6 col-xl-3">
         <div class="stat-card stat-card-overdue">
             <div class="stat-card-content">
                 <div class="stat-icon stat-icon-overdue">
@@ -975,7 +888,7 @@
 
 <div class="row row-horizontal">
     <!-- Enhanced Project Charts Section -->
-    <div class="col-lg-4 col-md-6 mb-4">
+    <div class="col-lg-6 col-md-6 mb-4">
         <div class="dashboard-card h-100">
             <div class="dashboard-card-header">
                 <h5 class="dashboard-card-title">
@@ -990,7 +903,7 @@
     </div>
     
     <!-- Task Priority Distribution Chart -->
-    <div class="col-lg-4 col-md-6 mb-4">
+    <div class="col-lg-6 col-md-6 mb-4">
         <div class="dashboard-card h-100">
             <div class="dashboard-card-header">
                 <h5 class="dashboard-card-title">
@@ -1053,7 +966,6 @@
 </div>
 <!-- Enhanced Project Progress -->
 <div class="row row-horizontal">
-    <div class="col-md-7 mb-4">
         <!-- Tasks Section -->
         <div class="dashboard-card h-100">
             <div class="dashboard-card-header">
@@ -1127,9 +1039,12 @@
                 </div>
             </div>
         </div>
-    </div>
     
-    <div class="col-md-5 mb-4">
+
+</div>
+
+<div class="row">
+	    <div class="col-md-5 mb-4">
         <!-- Project Progress -->
         <div class="dashboard-card h-100">
             <div class="dashboard-card-header">
@@ -1176,28 +1091,6 @@
     </div>
 </div>
 
-<!-- Enhanced Quick Actions -->
-<div class="quick-actions">
-    {% if can_create_project %}
-    <a href="{% url 'projects:create' %}" class="btn btn-primary" data-bs-toggle="tooltip" title="Create a new project">
-        <i class="fas fa-plus-circle me-2"></i> New Project
-    </a>
-    {% endif %}
-    
-    {% if can_create_task %}
-    <a href="{% url 'tasks:create' %}" class="btn btn-outline-success" data-bs-toggle="tooltip" title="Create a new task">
-        <i class="fas fa-tasks me-2"></i> New Task
-    </a>
-    {% endif %}
-    
-    <a href="{% url 'tasks:kanban' %}" class="btn btn-outline-info" data-bs-toggle="tooltip" title="Kanban board">
-        <i class="fas fa-columns me-2"></i> Kanban Board
-    </a>
-    
-    <a href="{% url 'tasks:calendar' %}" class="btn btn-outline-secondary" data-bs-toggle="tooltip" title="Task calendar">
-        <i class="fas fa-calendar-alt me-2"></i> Calendar
-    </a>
-</div>
 
 <!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
