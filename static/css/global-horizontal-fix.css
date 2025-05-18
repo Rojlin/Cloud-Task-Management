@@ -1,0 +1,76 @@
+/* Global CSS fixes for horizontal layouts across the application */
+
+/* Fix for horizontal row layouts */
+.row-horizontal {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  width: 100% !important;
+  margin-right: 0 !important;
+  margin-left: 0 !important;
+  padding-bottom: 15px !important;
+}
+
+/* Fix for columns in horizontal rows */
+.row-horizontal > [class*="col-"] {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  min-width: 250px !important;
+  max-width: none !important;
+  float: none !important;
+  margin-right: 15px !important;
+}
+
+/* Fix for cards in horizontal layouts */
+.row-horizontal .card {
+  height: 100%;
+  width: 100%;
+}
+
+/* Fix for Bootstrap grid behavior in horizontal layouts */
+@media (max-width: 767.98px) {
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+  }
+  
+  /* Prevent rows from stacking on small screens when they shouldn't */
+  .row.row-horizontal {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Ensure columns don't stack on small screens when in horizontal rows */
+  .row.row-horizontal > [class*="col-"] {
+    width: auto !important;
+    flex: 0 0 auto !important;
+  }
+}
+
+/* Fix for project cards and other grid items to display properly */
+.project-card, .dashboard-card {
+  margin-bottom: 20px;
+  height: 100%;
+}
+
+/* Card deck fix for horizontal layouts */
+.card-deck {
+  display: flex;
+  flex-flow: row wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+
+.card-deck .card {
+  flex: 1 0 0%;
+  margin-right: 15px;
+  margin-left: 15px;
+  margin-bottom: 15px;
+}
+
+/* Force all cards to have consistent height within a row */
+.equal-height-cards .card {
+  height: 100%;
+}

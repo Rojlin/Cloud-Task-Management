@@ -4,25 +4,61 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block extra_css %}
-<link href="{% static 'css/kanban-horizontal.css' %}" rel="stylesheet">
-<link href="{% static 'css/kanban-fix.css' %}" rel="stylesheet">
 <style>
     /* Direct inline styles to force horizontal layout */
+    /* Row container for Kanban board */
     .row.flex-nowrap {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         overflow-x: auto !important;
         width: 100% !important;
+        margin-right: 0 !important;
+        margin-left: 0 !important;
+        padding-bottom: 15px !important;
     }
     
-    .flex-shrink-0 {
+    /* Column styles for Kanban board */
+    .col-md-3.flex-shrink-0 {
         flex: 0 0 300px !important;
         width: 300px !important;
         min-width: 300px !important;
         max-width: 350px !important;
         float: none !important;
+        margin-right: 15px !important;
     }
+    
+    /* Card styles for Kanban columns */
+    .kanban-column {
+        height: 100%;
+        min-height: 500px;
+        border-radius: 8px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    /* Card styles for tasks */
+    .task-card {
+        margin-bottom: 10px;
+        cursor: grab;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    }
+    
+    /* Border styles for task cards based on status */
+    .border-left-todo { border-left: 5px solid #ffc107; }
+    .border-left-progress { border-left: 5px solid #007bff; }
+    .border-left-review { border-left: 5px solid #6f42c1; }
+    .border-left-done { border-left: 5px solid #28a745; }
+    
+    /* Border styles for task cards based on priority */
+    .task-priority-low { border-top: 3px solid #28a745; }
+    .task-priority-medium { border-top: 3px solid #17a2b8; }
+    .task-priority-high { border-top: 3px solid #ffc107; }
+    .task-priority-urgent { border-top: 3px solid #dc3545; }
 </style>
 {% endblock %}
 
