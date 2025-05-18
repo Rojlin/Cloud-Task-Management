@@ -4,71 +4,24 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block extra_css %}
-<link href="{% static 'css/kanban.css' %}" rel="stylesheet">
+<link href="{% static 'css/kanban-horizontal.css' %}" rel="stylesheet">
+<link href="{% static 'css/kanban-fix.css' %}" rel="stylesheet">
 <style>
-    .border-left-todo {
-        border-left: 5px solid #ffc107;
+    /* Direct inline styles to force horizontal layout */
+    .row.flex-nowrap {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        width: 100% !important;
     }
     
-    .border-left-progress {
-        border-left: 5px solid #007bff;
-    }
-    
-    .border-left-review {
-        border-left: 5px solid #6f42c1;
-    }
-    
-    .border-left-done {
-        border-left: 5px solid #28a745;
-    }
-    
-    .task-priority-low {
-        border-top: 3px solid #28a745;
-    }
-    
-    .task-priority-medium {
-        border-top: 3px solid #17a2b8;
-    }
-    
-    .task-priority-high {
-        border-top: 3px solid #ffc107;
-    }
-    
-    .task-priority-urgent {
-        border-top: 3px solid #dc3545;
-    }
-    
-    .task-overdue {
-        background-color: rgba(255, 193, 7, 0.1);
-    }
-    
-    .task-actions {
-        display: none;
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
-    }
-    
-    .task-card:hover .task-actions {
-        display: block;
-    }
-    
-    .column-header {
-        position: sticky;
-        top: 0;
-        z-index: 100;
-        background-color: #f8f9fa;
-    }
-    
-    /* Fix for horizontal scrolling on mobile devices */
-    @media (max-width: 767.98px) {
-        .row.kanban-row {
-            overflow-x: auto;
-            flex-wrap: nowrap;
-            padding-bottom: 15px;
-            margin-right: 0;
-            margin-left: 0;
-        }
+    .flex-shrink-0 {
+        flex: 0 0 300px !important;
+        width: 300px !important;
+        min-width: 300px !important;
+        max-width: 350px !important;
+        float: none !important;
     }
 </style>
 {% endblock %}
@@ -89,9 +42,10 @@
         </div>
     </div>
     
-    <div class="row kanban-row">
+    <!-- Horizontal Kanban Board -->
+    <div class="row flex-nowrap overflow-auto">
         <!-- To Do Column -->
-        <div class="col-md-3 kanban-col">
+        <div class="col-md-3 col-sm-10 flex-shrink-0 mx-2">
             <div class="card shadow-sm kanban-column" id="todo-column">
                 <div class="card-header column-header bg-warning bg-opacity-25">
                     <h5 class="mb-0 d-flex justify-content-between align-items-center">
@@ -99,7 +53,8 @@
                         <span class="badge bg-warning text-dark">{{ todo_tasks.count }}</span>
                     </h5>
                 </div>
-                <div class="card-body p-2 todo-tasks kanban-column-content" data-status="todo">
+                <div class="card-body p-2 column-content todo-tasks" data-status="todo">
+
                     {% for task in todo_tasks %}
                     <div class="card shadow-sm task-card border-left-todo task-priority-{{ task.priority }}" data-task-id="{{ task.id }}">
                         <div class="card-header d-flex justify-content-between align-items-center">
@@ -151,7 +106,7 @@
         </div>
         
         <!-- In Progress Column -->
-        <div class="col-md-3 kanban-col">
+        <div class="col-md-3 col-sm-10 flex-shrink-0 mx-2">
             <div class="card shadow-sm kanban-column" id="in-progress-column">
                 <div class="card-header column-header bg-primary bg-opacity-25">
                     <h5 class="mb-0 d-flex justify-content-between align-items-center">
@@ -159,7 +114,8 @@
                         <span class="badge bg-primary">{{ in_progress_tasks.count }}</span>
                     </h5>
                 </div>
-                <div class="card-body p-2 in-progress-tasks kanban-column-content" data-status="in_progress">
+                <div class="card-body p-2 column-content in-progress-tasks" data-status="in_progress">
+
                     {% for task in in_progress_tasks %}
                     <div class="card shadow-sm task-card border-left-progress task-priority-{{ task.priority }}" data-task-id="{{ task.id }}">
                         <div class="card-header d-flex justify-content-between align-items-center">
@@ -214,7 +170,7 @@
         </div>
         
         <!-- Review Column -->
-        <div class="col-md-3 kanban-col">
+        <div class="col-md-3 col-sm-10 flex-shrink-0 mx-2">
             <div class="card shadow-sm kanban-column" id="review-column">
                 <div class="card-header column-header bg-secondary bg-opacity-25">
                     <h5 class="mb-0 d-flex justify-content-between align-items-center">
@@ -222,7 +178,7 @@
                         <span class="badge bg-secondary">{{ review_tasks.count }}</span>
                     </h5>
                 </div>
-                <div class="card-body p-2 review-tasks kanban-column-content" data-status="review">
+                <div class="card-body p-2 column-content" data-status="review">
                     {% for task in review_tasks %}
                     <div class="card shadow-sm task-card border-left-review task-priority-{{ task.priority }}" data-task-id="{{ task.id }}">
                         <div class="card-header d-flex justify-content-between align-items-center">
@@ -277,7 +233,7 @@
         </div>
         
         <!-- Completed Column -->
-        <div class="col-md-3 kanban-col">
+        <div class="col-md-3 col-sm-10 flex-shrink-0 mx-2">
             <div class="card shadow-sm kanban-column" id="completed-column">
                 <div class="card-header column-header bg-success bg-opacity-25">
                     <h5 class="mb-0 d-flex justify-content-between align-items-center">
@@ -285,7 +241,7 @@
                         <span class="badge bg-success">{{ completed_tasks.count }}</span>
                     </h5>
                 </div>
-                <div class="card-body p-2 completed-tasks kanban-column-content" data-status="completed">
+                <div class="card-body p-2 column-content" data-status="completed">
                     {% for task in completed_tasks %}
                     <div class="card shadow-sm task-card border-left-done task-priority-{{ task.priority }}" data-task-id="{{ task.id }}">
                         <div class="card-header d-flex justify-content-between align-items-center">

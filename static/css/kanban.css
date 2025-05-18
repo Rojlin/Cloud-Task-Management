@@ -1,34 +1,31 @@
-.kanban-board-container {
-    display: flex;
-    flex-direction: row;
+/* Enforcing horizontal layout for Kanban board */
+.kanban-row {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     width: 100%;
     overflow-x: auto;
     padding-bottom: 20px;
 }
 
-.kanban-column-wrapper {
-    flex: 1;
-    min-width: 300px;
-    max-width: 350px;
-    margin-right: 15px;
+.kanban-col {
+    flex: 0 0 auto !important;
+    width: 300px !important;
+    min-width: 300px !important;
+    max-width: 350px !important;
+    margin-right: 15px !important;
+    float: none !important;
 }
 
 .kanban-column {
     height: 100%;
+    min-height: 500px;
     display: flex;
     flex-direction: column;
     background-color: #f8f9fa;
     border-radius: 6px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.kanban-column-header {
-    padding: 12px 15px;
-    font-weight: bold;
-    border-bottom: 1px solid #e3e6f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    margin-bottom: 15px;
 }
 
 .kanban-column-content {
@@ -50,32 +47,29 @@
     box-shadow: 0 5px 10px rgba(0,0,0,0.1) !important;
 }
 
-/* Override Bootstrap's responsive behavior that's causing the stacking */
-@media (max-width: 768px) {
-    .kanban-board-container {
-        overflow-x: auto;
-        flex-wrap: nowrap;
+/* For all screen sizes */
+.column-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #f8f9fa;
+}
+
+/* Make sure the row doesn't collapse on small screens */
+@media (max-width: 767.98px) {
+    .container-fluid {
+        padding-left: 5px;
+        padding-right: 5px;
     }
     
-    /* Force columns to stay horizontal even on small screens */
-    .kanban-column-wrapper {
-        min-width: 280px;
-        width: 280px;
-        flex-shrink: 0;
+    .kanban-row {
+        margin-left: -5px;
+        margin-right: -5px;
     }
     
-    /* Make the container wider than the viewport to allow scrolling */
-    .row.kanban-row {
-        width: auto;
-        margin: 0;
-        display: flex;
-        flex-wrap: nowrap;
-    }
-    
-    .col-md-3.kanban-col {
-        width: 280px;
-        flex: 0 0 280px;
-        max-width: none;
-        padding: 0 7.5px;
+    .kanban-col {
+        width: 280px !important;
+        min-width: 280px !important;
+        padding: 0 5px;
     }
 }
