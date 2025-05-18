@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollaboraSync Workflow Diagrams</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        h1 {
+            color: #0d6efd;
+        }
+        h2 {
+            color: #495057;
+            margin-top: 40px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .diagram {
+            margin: 30px 0;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: auto;
+        }
+        .diagram img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+        }
+        .description {
+            margin: 15px 0;
+            line-height: 1.6;
+        }
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #0d6efd;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .btn:hover {
+            background-color: #0b5ed7;
+        }
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid #dee2e6;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>CollaboraSync Workflow Diagrams</h1>
+            <p>Visual representation of the system architecture and user workflows</p>
+        </header>
+
+        <h2>System Architecture Diagram</h2>
+        <div class="description">
+            This diagram illustrates the high-level architecture of the CollaboraSync system, showing how the different tiers and components interact with each other.
+        </div>
+        <div class="diagram">
+            <img src="img/workflow-diagram.svg" alt="System Architecture Diagram">
+        </div>
+
+        <h2>User Workflow Diagram</h2>
+        <div class="description">
+            This diagram shows the key user workflows within the system, including user registration, project management, and the Kanban board task management flow.
+        </div>
+        <div class="diagram">
+            <img src="img/user-workflow-diagram.svg" alt="User Workflow Diagram">
+        </div>
+
+        <h2>Real-Time Communication Workflow</h2>
+        <div class="description">
+            This diagram illustrates how real-time communication and notifications work in CollaboraSync, highlighting the WebSocket connection flow, notification system, and chat functionality.
+        </div>
+        <div class="diagram">
+            <img src="img/realtime-workflow-diagram.svg" alt="Real-Time Communication Workflow">
+        </div>
+
+        <footer>
+            <p>CollaboraSync - Advanced Task Management System</p>
+        </footer>
+    </div>
+</body>
+</html>

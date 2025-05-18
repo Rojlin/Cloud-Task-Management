@@ -1,0 +1,81 @@
+.kanban-board-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 20px;
+}
+
+.kanban-column-wrapper {
+    flex: 1;
+    min-width: 300px;
+    max-width: 350px;
+    margin-right: 15px;
+}
+
+.kanban-column {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.kanban-column-header {
+    padding: 12px 15px;
+    font-weight: bold;
+    border-bottom: 1px solid #e3e6f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.kanban-column-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    min-height: 300px;
+    max-height: 70vh;
+}
+
+.task-card {
+    cursor: grab;
+    margin-bottom: 10px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.task-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.1) !important;
+}
+
+/* Override Bootstrap's responsive behavior that's causing the stacking */
+@media (max-width: 768px) {
+    .kanban-board-container {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+    
+    /* Force columns to stay horizontal even on small screens */
+    .kanban-column-wrapper {
+        min-width: 280px;
+        width: 280px;
+        flex-shrink: 0;
+    }
+    
+    /* Make the container wider than the viewport to allow scrolling */
+    .row.kanban-row {
+        width: auto;
+        margin: 0;
+        display: flex;
+        flex-wrap: nowrap;
+    }
+    
+    .col-md-3.kanban-col {
+        width: 280px;
+        flex: 0 0 280px;
+        max-width: none;
+        padding: 0 7.5px;
+    }
+}

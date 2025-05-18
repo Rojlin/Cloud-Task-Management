@@ -356,7 +356,7 @@
                                     <img src="{{ member.user.userprofile.avatar.url }}" alt="{{ member.user.username }}" class="avatar avatar-sm me-3">
                                 {% else %}
                                     <div class="avatar avatar-sm d-flex align-items-center justify-content-center bg-primary text-white me-3">
-                                        {{ member.user.username }}
+                                        {{ member.user.username|first|upper }}
                                     </div>
                                 {% endif %}
                                 <div>

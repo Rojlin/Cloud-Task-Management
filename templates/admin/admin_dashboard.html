@@ -136,13 +136,13 @@
         <p>This is the administration interface for managing the CollaboraSync application. Here you can view and edit database records directly.</p>
         
         <div class="admin-actions">
-            <a href="/dashboard/" class="admin-btn">
+            <a href="{% url 'dashboard:index' %}" class="admin-btn">
                 <i class="bi bi-arrow-left"></i> Return to Dashboard
             </a>
-            <a href="/admin/accounts/user/" class="admin-btn">
+            <a href="{% url 'accounts:user_list' %}" class="admin-btn">
                 <i class="bi bi-people-fill"></i> Manage Users
             </a>
-            <a href="/admin/password_change/" class="admin-btn">
+            <a href="{% url 'accounts:password_change' %}" class="admin-btn">
                 <i class="bi bi-key-fill"></i> Change Password
             </a>
 
@@ -157,10 +157,10 @@
                 <div class="admin-card-body">
                     <ul>
                         <li>
-                            <a href="/accounts/users/">Users</a>
+                            <a href="{% url 'accounts:user_list' %}">Users</a>
                             <div class="action-links">
-                                <a href="/accounts/users/create/" class="action-link">Add</a>
-                                <a href="/accounts/users/" class="action-link">Change</a>
+                                <a href="{% url 'accounts:user_create' %}" class="action-link">Add</a>
+                                <a href="{% url 'accounts:user_list' %}" class="action-link">Change</a>
                             </div>
                         </li>
 
@@ -178,10 +178,9 @@
                 <div class="admin-card-body">
                     <ul>
                         <li>
-                            <a href="/analytics/snapshots/">Analytics Snapshots</a>
+                            <a href="{% url 'analytics:analytics_snapshots' %}">Analytics Snapshots</a>
                             <div class="action-links">
-                                <a href="/analytics/snapshots/create/" class="action-link">Add</a>
-                                <a href="/analytics/snapshots/" class="action-link">View</a>
+                                <a href="{% url 'analytics:analytics_snapshots' %}" class="action-link">View</a>
                             </div>
                         </li>
                     </ul>
@@ -192,10 +191,10 @@
                 <div class="admin-card-body">
                     <ul>
                         <li>
-                            <a href="/analytics/reports/">Reports</a>
+                            <a href="{% url 'analytics:report_list' %}">Reports</a>
                             <div class="action-links">
-                                <a href="/analytics/reports/create/" class="action-link">Generate</a>
-                                <a href="/analytics/reports/" class="action-link">View</a>
+                                <a href="{% url 'analytics:report_create' %}" class="action-link">Generate</a>
+                                <a href="{% url 'analytics:report_list' %}" class="action-link">View</a>
                             </div>
                         </li>
                     </ul>
@@ -206,15 +205,15 @@
                 <div class="admin-card-body">
                     <ul>
                         <li>
-                            <a href="/analytics/tasks/">Task Completion Times</a>
+                            <a href="{% url 'analytics:task_analytics' %}">Task Completion Times</a>
                             <div class="action-links">
-                                <a href="/analytics/tasks/" class="action-link">View</a>
+                                <a href="{% url 'analytics:task_analytics' %}" class="action-link">View</a>
                             </div>
                         </li>
                         <li>
-                            <a href="/analytics/productivity/">User Productivity</a>
+                            <a href="{% url 'analytics:productivity_analytics' %}">User Productivity</a>
                             <div class="action-links">
-                                <a href="/analytics/productivity/" class="action-link">View</a>
+                                <a href="{% url 'analytics:productivity_analytics' %}" class="action-link">View</a>
                             </div>
                         </li>
                     </ul>
@@ -225,9 +224,9 @@
                 <div class="admin-card-body">
                     <ul>
                         <li>
-                            <a href="/analytics/">Analytics Dashboard</a>
+                            <a href="{% url 'analytics:dashboard' %}">Analytics Dashboard</a>
                             <div class="action-links">
-                                <a href="/analytics/" class="action-link">View</a>
+                                <a href="{% url 'analytics:dashboard' %}" class="action-link">View</a>
                             </div>
                         </li>
                     </ul>
@@ -244,17 +243,10 @@
                 <div class="admin-card-body">
                     <ul>
                         <li>
-                            <a href="/projects/list/">Projects</a>
+                            <a href="{% url 'projects:list' %}">Projects</a>
                             <div class="action-links">
-                                <a href="/projects/create/" class="action-link">Add</a>
-                                <a href="/projects/list/" class="action-link">View</a>
-                            </div>
-                        </li>
-                        <li>
-                            <a href="/projects/categories/">Project Categories</a>
-                            <div class="action-links">
-                                <a href="/projects/categories/create/" class="action-link">Add</a>
-                                <a href="/projects/categories/" class="action-link">View</a>
+                                <a href="{% url 'projects:create' %}" class="action-link">Add</a>
+                                <a href="{% url 'projects:list' %}" class="action-link">View</a>
                             </div>
                         </li>
                     </ul>
@@ -265,22 +257,22 @@
                 <div class="admin-card-body">
                     <ul>
                         <li>
-                            <a href="/tasks/list/">Tasks List</a>
+                            <a href="{% url 'tasks:list' %}">Tasks List</a>
                             <div class="action-links">
-                                <a href="/tasks/create/" class="action-link">Add</a>
-                                <a href="/tasks/list/" class="action-link">View</a>
+                                <a href="{% url 'tasks:create' %}" class="action-link">Add</a>
+                                <a href="{% url 'tasks:list' %}" class="action-link">View</a>
                             </div>
                         </li>
                         <li>
-                            <a href="/tasks/kanban/">Kanban Board</a>
+                            <a href="{% url 'tasks:kanban' %}">Kanban Board</a>
                             <div class="action-links">
-                                <a href="/tasks/kanban/" class="action-link">View</a>
+                                <a href="{% url 'tasks:kanban' %}" class="action-link">View</a>
                             </div>
                         </li>
                         <li>
-                            <a href="/tasks/calendar/">Task Calendar</a>
+                            <a href="{% url 'tasks:calendar' %}">Task Calendar</a>
                             <div class="action-links">
-                                <a href="/tasks/calendar/" class="action-link">View</a>
+                                <a href="{% url 'tasks:calendar' %}" class="action-link">View</a>
                             </div>
                         </li>
                     </ul>

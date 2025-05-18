@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ report.title }} | Reports | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-4 mb-0">{{ report.title }}</h1>
+                    <p class="text-muted">{{ report.description|default:"No description provided" }}</p>
+                </div>
+                <div>
+                    <a href="{% url 'analytics:report_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+                    </a>
+                </div>
+            </div>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Report Details Column -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Report Details</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th scope="row">Report Type:</th>
+                            <td>{{ report.report_type.name }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Format:</th>
+                            <td>
+                                {% if report.format == 'pdf' %}
+                                <span class="badge bg-danger">PDF</span>
+                                {% elif report.format == 'excel' %}
+                                <span class="badge bg-success">Excel</span>
+                                {% elif report.format == 'csv' %}
+                                <span class="badge bg-primary">CSV</span>
+                                {% else %}
+                                <span class="badge bg-info">JSON</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Frequency:</th>
+                            <td>{{ report.get_frequency_display }}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Project:</th>
+                            <td>
+                                {% if report.project %}
+                                <a href="{% url 'projects:detail' report.project.id %}">{{ report.project.name }}</a>
+                                {% else %}
+                                All Projects
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Created:</th>
+                            <td>{{ report.created_at|date:"F j, Y" }}</td>
+                        </tr>
+                        {% if report.last_generated %}
+                        <tr>
+                            <th scope="row">Last Generated:</th>
+                            <td>{{ report.last_generated|date:"F j, Y, g:i a" }}</td>
+                        </tr>
+                        {% endif %}
+                        {% if report.next_generation and report.frequency != 'once' %}
+                        <tr>
+                            <th scope="row">Next Generation:</th>
+                            <td>{{ report.next_generation|date:"F j, Y, g:i a" }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <th scope="row">Status:</th>
+                            <td>
+                                {% if report.is_active %}
+                                <span class="badge bg-success">Active</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'analytics:generate_report' report.id %}" class="btn btn-primary btn-block">
+                        <i class="fas fa-sync-alt mr-2"></i> Generate Report Now
+                    </a>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-edit mr-2"></i> Edit Report Configuration
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action">
+                            <i class="fas fa-envelope mr-2"></i> Schedule Email Delivery
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action text-danger">
+                            <i class="fas fa-trash-alt mr-2"></i> Delete Report
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Report Files Column -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Generated Reports</h5>
+                </div>
+                <div class="card-body">
+                    {% if report_files %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th>Generated Date</th>
+                                    <th>Format</th>
+                                    <th>Size</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for file in report_files %}
+                                <tr>
+                                    <td>{{ file.created_at|date:"F j, Y, g:i a" }}</td>
+                                    <td>
+                                        {% if file.format == 'pdf' %}
+                                        <span class="badge bg-danger">PDF</span>
+                                        {% elif file.format == 'excel' %}
+                                        <span class="badge bg-success">Excel</span>
+                                        {% elif file.format == 'csv' %}
+                                        <span class="badge bg-primary">CSV</span>
+                                        {% else %}
+                                        <span class="badge bg-info">JSON</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ file.size|filesizeformat }}</td>
+                                    <td>
+                                        <a href="{% url 'analytics:download_report' report.id file.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-download"></i> Download
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">No Generated Reports Yet</h5>
+                        <p>This report hasn't been generated yet. Click the "Generate Report Now" button to create your first report file.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if report.report_type.name == 'Task Progress' or report.report_type.name == 'Project Overview' %}
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Preview</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="reportPreviewChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if report.report_type.name == 'Task Progress' or report.report_type.name == 'Project Overview' %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    $(document).ready(function() {
+        // Sample preview chart - in a real application, this data would come from an API
+        const ctx = document.getElementById('reportPreviewChart').getContext('2d');
+        
+        {% if report.report_type.name == 'Task Progress' %}
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['To Do', 'In Progress', 'Review', 'Completed'],
+                datasets: [{
+                    label: 'Tasks by Status',
+                    data: [12, 19, 7, 15],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.5)',
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(255, 206, 86, 0.5)',
+                        'rgba(75, 192, 192, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        {% else %}
+        new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: ['Completed', 'In Progress', 'Not Started'],
+                datasets: [{
+                    label: 'Project Tasks',
+                    data: [65, 25, 10],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.5)',
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(255, 99, 132, 0.5)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endif %}
+{% endblock %}

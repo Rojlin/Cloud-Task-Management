@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Report | {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="display-4 mb-0">Create New Report</h1>
+                    <p class="text-muted">Configure a customized report to analyze project or system data</p>
+                </div>
+                <div>
+                    <a href="{% url 'analytics:report_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Reports
+                    </a>
+                </div>
+            </div>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" action="{% url 'analytics:report_create' %}">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <h5 class="alert-heading">Please fix the following errors:</h5>
+                            {{ form.errors }}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="form-group row mb-3">
+                            <label for="id_title" class="col-sm-3 col-form-label">Report Title <span class="text-danger">*</span></label>
+                            <div class="col-sm-9">
+                                <input type="text" name="title" id="id_title" class="form-control" required>
+                                <small class="form-text text-muted">A descriptive name for your report</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label for="id_description" class="col-sm-3 col-form-label">Description</label>
+                            <div class="col-sm-9">
+                                <textarea name="description" id="id_description" class="form-control" rows="3"></textarea>
+                                <small class="form-text text-muted">Optional: Add details about the purpose of this report</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label for="id_report_type" class="col-sm-3 col-form-label">Report Type <span class="text-danger">*</span></label>
+                            <div class="col-sm-9">
+                                <select name="report_type" id="id_report_type" class="form-control" required>
+                                    <option value="">-- Select Report Type --</option>
+                                    {% for report_type in report_types %}
+                                    <option value="{{ report_type.id }}">{{ report_type.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="form-text text-muted">The type of data to include in the report</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label for="id_project" class="col-sm-3 col-form-label">Project</label>
+                            <div class="col-sm-9">
+                                <select name="project" id="id_project" class="form-control">
+                                    <option value="">-- All Projects --</option>
+                                    {% for project in projects %}
+                                    <option value="{{ project.id }}">{{ project.name }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="form-text text-muted">Optional: Select a specific project, or leave blank for all projects</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label for="id_format" class="col-sm-3 col-form-label">Format <span class="text-danger">*</span></label>
+                            <div class="col-sm-9">
+                                <select name="format" id="id_format" class="form-control" required>
+                                    <option value="pdf">PDF</option>
+                                    <option value="excel">Excel</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="json">JSON</option>
+                                </select>
+                                <small class="form-text text-muted">The file format for the generated report</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label for="id_frequency" class="col-sm-3 col-form-label">Generation Frequency <span class="text-danger">*</span></label>
+                            <div class="col-sm-9">
+                                <select name="frequency" id="id_frequency" class="form-control" required>
+                                    <option value="once">One-time</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="quarterly">Quarterly</option>
+                                </select>
+                                <small class="form-text text-muted">How often the report should be generated</small>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mb-3">
+                            <label class="col-sm-3 col-form-label">Additional Parameters</label>
+                            <div class="col-sm-9">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="include_charts" id="id_include_charts" value="true">
+                                    <label class="form-check-label" for="id_include_charts">
+                                        Include visual charts
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="include_raw_data" id="id_include_raw_data" value="true">
+                                    <label class="form-check-label" for="id_include_raw_data">
+                                        Include raw data tables
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group row mt-4">
+                            <div class="col-sm-9 offset-sm-3">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-save mr-2"></i> Create Report
+                                </button>
+                                <a href="{% url 'analytics:report_list' %}" class="btn btn-outline-secondary ml-2">Cancel</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        // Update form fields based on selected report type
+        $('#id_report_type').change(function() {
+            const reportTypeId = $(this).val();
+            // Here you could add AJAX to fetch report type-specific parameters
+            // And dynamically update the form
+        });
+        
+        // Show/hide date fields based on frequency
+        $('#id_frequency').change(function() {
+            const frequency = $(this).val();
+            if (frequency === 'once') {
+                // Hide scheduling options
+            } else {
+                // Show scheduling options
+            }
+        });
+    });
+</script>
+{% endblock %}

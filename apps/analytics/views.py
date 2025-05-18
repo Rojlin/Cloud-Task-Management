@@ -314,7 +314,58 @@ def report_create(request):
     
     if request.method == 'POST':
         # Handle report creation
-        pass
+        title = request.POST.get('title')
+        description = request.POST.get('description', '')
+        report_type_id = request.POST.get('report_type')
+        project_id = request.POST.get('project')
+        format_type = request.POST.get('format', 'pdf')
+        frequency = request.POST.get('frequency', 'once')
+        
+        # Validate required fields
+        if not title or not report_type_id:
+            messages.error(request, "Please fill in all required fields.")
+            return render(request, 'analytics/report_create.html', {
+                'report_types': report_types,
+                'projects': projects,
+                'page_title': 'Create Report',
+                'form_errors': True
+            })
+        
+        # Get related objects
+        try:
+            report_type = ReportType.objects.get(id=report_type_id)
+            project = Project.objects.get(id=project_id) if project_id else None
+        except (ReportType.DoesNotExist, Project.DoesNotExist):
+            messages.error(request, "Invalid report type or project.")
+            return render(request, 'analytics/report_create.html', {
+                'report_types': report_types,
+                'projects': projects,
+                'page_title': 'Create Report',
+                'form_errors': True
+            })
+        
+        # Process additional parameters
+        parameters = {
+            'include_charts': request.POST.get('include_charts') == 'true',
+            'include_raw_data': request.POST.get('include_raw_data') == 'true',
+        }
+        
+        # Create the report
+        report = Report(
+            title=title,
+            description=description,
+            report_type=report_type,
+            user=request.user,
+            project=project,
+            format=format_type,
+            frequency=frequency,
+            parameters=parameters,
+            is_active=True
+        )
+        report.save()
+        
+        messages.success(request, f"Report '{title}' has been created successfully.")
+        return redirect('analytics:report_detail', report_id=report.id)
     
     context = {
         'report_types': report_types,
