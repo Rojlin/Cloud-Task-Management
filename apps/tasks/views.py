@@ -491,14 +491,14 @@ class TaskUpdateView(LoginRequiredMixin, TaskAccessMixin, UpdateView):
         return context
 
 
-class TaskDeleteView(LoginRequiredMixin, TaskAccessMixin, DeleteView):
+class TaskDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Task
     template_name = "tasks/delete.html"
     success_url = reverse_lazy("tasks:list")
     context_object_name = "task"
 
     def test_func(self):
-        if not super().test_func():
+        if not self.request.user.is_authenticated:
             return False
 
         # Only admin, task creator, project managers can delete tasks
