@@ -4,15 +4,17 @@
 {% block title %}{{ title }}{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/kanban-enhanced.css' %}">
 <style>
-
-	.kanban-board-container {
-    overflow-x: auto;
-    white-space: nowrap;
-	}
-
-
-    /* Direct inline styles to force horizontal layout */
+    /* Additional fixes for task overlapping */
+    .container-fluid {
+        padding-left: 15px;
+        padding-right: 15px;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+    
     /* Row container for Kanban board */
     .row.flex-nowrap {
         display: flex !important;
@@ -23,16 +25,46 @@
         margin-right: 0 !important;
         margin-left: 0 !important;
         padding-bottom: 15px !important;
+        /* Add scrollbar styling */
+        scrollbar-width: thin;
+        scrollbar-color: #999 #f1f1f1;
+        /* Keep content within viewport with scrolling */
+        max-width: 100%;
+        /* Fix whitespace issues */
+        white-space: nowrap;
+    }
+    
+    /* Scrollbar styling for WebKit browsers */
+    .row.flex-nowrap::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    .row.flex-nowrap::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+    
+    .row.flex-nowrap::-webkit-scrollbar-thumb {
+        background: #999;
+        border-radius: 4px;
     }
     
     /* Column styles for Kanban board */
     .col-md-3.flex-shrink-0 {
-        flex: 0 0 300px !important;
-        width: 300px !important;
-        min-width: 300px !important;
-        max-width: 350px !important;
+        flex: 0 0 250px !important;
+        width: 250px !important;
+        min-width: 250px !important;
+        max-width: 250px !important;
         float: none !important;
-        margin-right: 15px !important;
+        margin-right: 10px !important;
+        margin-left: 0 !important;
+        padding-left: 5px !important;
+        padding-right: 5px !important;
+    }
+    
+    /* Last column should not have margin-right */
+    .col-md-3.flex-shrink-0:last-child {
+        margin-right: 0 !important;
     }
     
     /* Card styles for Kanban columns */
@@ -48,14 +80,7 @@
         margin-bottom: 10px;
         cursor: grab;
         transition: transform 0.2s, box-shadow 0.2s;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-.task-card .card-body {
-    flex-grow: 1;
-}
-
+    }
     
     .task-card:hover {
         transform: translateY(-2px);
@@ -73,6 +98,16 @@
     .task-priority-medium { border-top: 3px solid #17a2b8; }
     .task-priority-high { border-top: 3px solid #ffc107; }
     .task-priority-urgent { border-top: 3px solid #dc3545; }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .col-md-3.flex-shrink-0 {
+            flex: 0 0 250px !important;
+            width: 250px !important;
+            min-width: 250px !important;
+            max-width: 250px !important;
+        }
+    }
 </style>
 {% endblock %}
 
@@ -93,8 +128,7 @@
     </div>
     
     <!-- Horizontal Kanban Board -->
-	<div class="kanban-board-container">
-    <div class="row flex-nowrap overflow-auto ml-2">
+    <div class="row flex-nowrap overflow-auto">
         <!-- To Do Column -->
         <div class="col-md-3 col-sm-10 flex-shrink-0 mx-2">
             <div class="card shadow-sm kanban-column" id="todo-column">
@@ -147,10 +181,7 @@
                         </div>
                     </div>
                     {% empty %}
-                    <div class="text-center text-muted py-4">
-                        <i class="bi bi-inbox fs-1"></i>
-                        <p class="mt-2">No tasks in this column</p>
-                    </div>
+
                     {% endfor %}
                 </div>
             </div>
@@ -211,10 +242,7 @@
                         </div>
                     </div>
                     {% empty %}
-                    <div class="text-center text-muted py-4">
-                        <i class="bi bi-inbox fs-1"></i>
-                        <p class="mt-2">No tasks in this column</p>
-                    </div>
+
                     {% endfor %}
                 </div>
             </div>
@@ -274,10 +302,7 @@
                         </div>
                     </div>
                     {% empty %}
-                    <div class="text-center text-muted py-4">
-                        <i class="bi bi-inbox fs-1"></i>
-                        <p class="mt-2">No tasks in this column</p>
-                    </div>
+
                     {% endfor %}
                 </div>
             </div>
@@ -330,16 +355,12 @@
                         </div>
                     </div>
                     {% empty %}
-                    <div class="text-center text-muted py-4">
-                        <i class="bi bi-inbox fs-1"></i>
-                        <p class="mt-2">No tasks in this column</p>
-                    </div>
+
                     {% endfor %}
                 </div>
             </div>
         </div>
     </div>
-</div>
 </div>
 {% endblock %}
 
@@ -363,14 +384,10 @@
         const columns = ['todo', 'in_progress', 'review', 'completed'];
         const taskGroups = {};
         
-        columns.forEach(status => {
-            const columnSelector = status === 'todo' ? '.todo-tasks' : 
-                                  status === 'in_progress' ? '.in-progress-tasks' : 
-                                  status === 'review' ? '.review-tasks' : 
-                                  '.completed-tasks';
-            
-            const columnEl = document.querySelector(columnSelector);
-            if (!columnEl) return;
+        // Select all elements with data-status attribute
+        document.querySelectorAll('[data-status]').forEach(columnEl => {
+            const status = columnEl.getAttribute('data-status');
+            if (!columns.includes(status)) return;
             
             taskGroups[status] = new Sortable(columnEl, {
                 group: 'tasks',
@@ -394,50 +411,47 @@
     }
     
     function getColumnStatus(columnElement) {
-        if (columnElement.classList.contains('todo-tasks')) return 'todo';
-        if (columnElement.classList.contains('in-progress-tasks')) return 'in_progress';
-        if (columnElement.classList.contains('review-tasks')) return 'review';
-        if (columnElement.classList.contains('completed-tasks')) return 'completed';
-        return null;
+        // Get status directly from the data-status attribute
+        return columnElement.getAttribute('data-status');
     }
     
     function updateTaskStatus(taskId, newStatus) {
-        // Update task status via WebSocket
-        if (taskSocket && taskSocket.readyState === WebSocket.OPEN) {
-            taskSocket.send(JSON.stringify({
-                'type': 'task_update',
-                'task_id': taskId,
-                'status': newStatus
-            }));
-        } else {
-            // If WebSocket is not connected, use AJAX as fallback
-            fetch(`/tasks/api/update_status/${taskId}/${newStatus}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': getCookie('csrftoken'),
-                    'Content-Type': 'application/json'
+        // Always update database via AJAX to ensure persistence
+        fetch(`/tasks/api/update_status/${taskId}/${newStatus}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                console.log('Task status updated successfully in database');
+                
+                // Also notify other users via WebSocket
+                if (taskSocket && taskSocket.readyState === WebSocket.OPEN) {
+                    taskSocket.send(JSON.stringify({
+                        'type': 'task_update',
+                        'task_id': taskId,
+                        'status': newStatus
+                    }));
                 }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                if (data.success) {
-                    // Update task card styles
-                    updateTaskCardStyles(taskId, newStatus);
-                } else {
-                    // If update fails, reload to get the current state
-                    window.location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error updating task status:', error);
+            } else {
+                console.error('Failed to update task status:', data.error);
+                // If update fails, reload to get the current state
                 window.location.reload();
-            });
-        }
+            }
+        })
+        .catch(error => {
+            console.error('Error updating task status:', error);
+            window.location.reload();
+        });
     }
     
     function setupKanbanWebSocket() {

@@ -34,18 +34,59 @@ class CustomLoginView(LoginView):
     template_name = "accounts/login.html"
 
     def form_valid(self, form):
-        username = form.cleaned_data.get("username")
-        password = form.cleaned_data.get("password")
-        user = authenticate(self.request, username=username, password=password)
+        user = form.get_user()
 
-        if user is not None and not user.is_verified and not user.is_superuser:
+        # Check if account is locked
+        if user.is_account_locked():
+            remaining_time = user.get_lockout_time_remaining()
+            messages.error(
+                self.request,
+                f"Account locked due to multiple failed login attempts. Please try again in {remaining_time} minutes.",
+            )
+            return self.form_invalid(form)
+
+        # Check if user is verified
+        if not user.is_verified and not user.is_superuser:
             messages.error(
                 self.request,
                 "Your account has not been verified yet. Please contact an admin.",
             )
             return self.form_invalid(form)
 
+        # Reset failed attempts on successful login
+        user.reset_failed_attempts()
+        messages.success(self.request, f"Welcome back, {user.username}!")
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        username = form.cleaned_data.get("username")
+        if username:
+            try:
+                user = User.objects.get(username=username)
+                if not user.is_account_locked():
+                    user.increment_failed_attempts()
+
+                    if user.is_account_locked():
+                        messages.error(
+                            self.request,
+                            "Account locked due to multiple failed login attempts. Please try again in 30 minutes.",
+                        )
+                    else:
+                        attempts_left = 3 - user.failed_login_attempts
+                        messages.warning(
+                            self.request,
+                            f"Invalid credentials. {attempts_left} attempts remaining before account lockout.",
+                        )
+                else:
+                    remaining_time = user.get_lockout_time_remaining()
+                    messages.error(
+                        self.request,
+                        f"Account locked. Please try again in {remaining_time} minutes.",
+                    )
+            except User.DoesNotExist:
+                messages.error(self.request, "Invalid username or password.")
+
+        return super().form_invalid(form)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
