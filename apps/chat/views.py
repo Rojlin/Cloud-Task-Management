@@ -89,7 +89,7 @@ class ChatRoomUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         room = self.get_object()
-        return self.request.user == room.created_by or self.request.user.is_admin
+        return self.request.user == room.created_by or self.request.user.is_admin()
 
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -116,7 +116,7 @@ class ChatRoomDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         room = self.get_object()
-        return self.request.user == room.created_by or self.request.user.is_admin
+        return self.request.user == room.created_by or self.request.user.is_admin()
 
     def delete(self, request, *args, **kwargs):
         room = self.get_object()
@@ -136,7 +136,7 @@ class ChatRoomAddMembersView(LoginRequiredMixin, UserPassesTestMixin, DetailView
 
     def test_func(self):
         room = self.get_object()
-        return self.request.user == room.created_by or self.request.user.is_admin
+        return self.request.user == room.created_by or self.request.user.is_admin()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

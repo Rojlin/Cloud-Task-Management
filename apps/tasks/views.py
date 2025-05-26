@@ -137,10 +137,33 @@ class TaskListView(LoginRequiredMixin, ListView):
         return context
 
 
-class TaskCreateView(LoginRequiredMixin, CreateView):
+class TaskCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = Task
     form_class = TaskForm
     template_name = "tasks/create.html"
+
+    def test_func(self):
+        """Only admin, project managers, and leaders can create tasks"""
+        if not self.request.user.is_authenticated:
+            return False
+
+        user = self.request.user
+
+        # Admin can create tasks anywhere
+        if user.is_admin:
+            return True
+
+        # Check if user has project manager or leader role
+        if hasattr(user, "userprofile"):
+            user_role = user.userprofile.role
+            if user_role in ["project_manager", "leader"]:
+                return True
+
+        return False
+
+    def handle_no_permission(self):
+        # Use our custom permission denied handler
+        return handle_permission_denied(self.request, "create tasks")
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -505,14 +528,20 @@ class TaskDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         user = self.request.user
         task = self.get_object()
 
-        if user.is_admin or task.created_by == user:
+        # Admin can delete any task
+        if user.is_admin:
+            return True
+
+        # Task creator can delete their own task
+        if task.created_by == user:
             return True
 
         # Check if user is a project manager for this project
-        project_member = ProjectMember.objects.filter(
-            project=task.project, user=user
-        ).first()
-        return project_member and project_member.role == ProjectMember.PROJECT_MANAGER
+        try:
+            project_member = ProjectMember.objects.get(project=task.project, user=user)
+            return project_member.role == ProjectMember.PROJECT_MANAGER
+        except ProjectMember.DoesNotExist:
+            return False
 
     def handle_no_permission(self):
         # Use our custom permission denied handler

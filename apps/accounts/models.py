@@ -79,6 +79,9 @@ class User(AbstractUser):
             return "team_member"
 
     def is_admin(self):
+        # Check both profile role and Django admin status for security
+        if self.is_superuser or self.is_staff:
+            return True
         return hasattr(self, "userprofile") and self.userprofile.role == "admin"
 
     def is_project_manager(self):

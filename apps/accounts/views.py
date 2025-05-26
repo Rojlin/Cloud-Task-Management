@@ -181,7 +181,7 @@ class ProfileEditView(LoginRequiredMixin, UpdateView):
 # Admin only views for user management
 class AdminRequiredMixin(UserPassesTestMixin):
     def test_func(self):
-        return self.request.user.is_authenticated and self.request.user.is_admin
+        return self.request.user.is_authenticated and self.request.user.is_admin()
 
 
 class UserListView(AdminRequiredMixin, ListView):
@@ -260,7 +260,7 @@ class UserUpdateView(AdminRequiredMixin, UpdateView):
 
 
 def verify_user(request, pk):
-    if not request.user.is_authenticated or not request.user.is_admin:
+    if not request.user.is_authenticated or not request.user.is_admin():
         messages.error(request, "You do not have permission to perform this action.")
         return redirect("accounts:login")
 

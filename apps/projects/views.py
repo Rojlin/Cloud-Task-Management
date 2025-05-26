@@ -40,7 +40,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         user = self.request.user
 
         # Get user's projects
-        if user.is_admin:
+        if user.is_admin():
             projects = Project.objects.all()
         else:
             projects = Project.objects.filter(
@@ -48,7 +48,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             ).distinct()
 
         # Get user's tasks
-        if user.is_admin:
+        if user.is_admin():
             tasks = Task.objects.all()
         else:
             tasks = Task.objects.filter(
@@ -127,7 +127,7 @@ class ProjectAccessMixin(UserPassesTestMixin):
             return False
 
         # Check if admin first
-        if self.request.user.is_admin:
+        if self.request.user.is_admin():
             return True
 
         # Get project from kwargs
@@ -159,7 +159,7 @@ class ProjectListView(LoginRequiredMixin, ListView):
 
         # Filter based on user role
         user = self.request.user
-        if not user.is_admin:
+        if not user.is_admin():
             queryset = queryset.filter(Q(created_by=user) | Q(members=user)).distinct()
 
         # Apply filters if form is valid
@@ -184,7 +184,7 @@ class ProjectListView(LoginRequiredMixin, ListView):
 
         # Add counts for dashboard
         user = self.request.user
-        if user.is_admin:
+        if user.is_admin():
             projects = Project.objects.all()
         else:
             projects = Project.objects.filter(
@@ -216,7 +216,7 @@ class ProjectCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     def test_func(self):
         # Only admin, project managers, and leaders can create projects
         user = self.request.user
-        return user.is_admin or user.is_project_manager or user.is_leader
+        return user.is_admin() or user.is_project_manager or user.is_leader
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
@@ -335,7 +335,7 @@ class ProjectUpdateView(LoginRequiredMixin, ProjectAccessMixin, UpdateView):
         user = self.request.user
         project = self.get_object()
 
-        if user.is_admin or project.created_by == user:
+        if user.is_admin() or project.created_by == user:
             return True
 
         # Check if user is a project manager or leader for this project
@@ -376,7 +376,7 @@ class ProjectDeleteView(LoginRequiredMixin, ProjectAccessMixin, DeleteView):
         user = self.request.user
         project = self.get_object()
 
-        return user.is_admin or project.created_by == user
+        return user.is_admin() or project.created_by == user
 
     def delete(self, request, *args, **kwargs):
         project = self.get_object()
@@ -420,7 +420,7 @@ class ProjectMemberCreateView(LoginRequiredMixin, ProjectAccessMixin, CreateView
         user = self.request.user
         project = get_object_or_404(Project, pk=self.kwargs["project_id"])
 
-        if user.is_admin or project.created_by == user:
+        if user.is_admin() or project.created_by == user:
             return True
 
         # Check if user is a project manager for this project
@@ -482,7 +482,7 @@ class ProjectMemberUpdateView(LoginRequiredMixin, ProjectAccessMixin, UpdateView
         user = self.request.user
         project = get_object_or_404(Project, pk=self.kwargs["project_id"])
 
-        if user.is_admin or project.created_by == user:
+        if user.is_admin() or project.created_by == user:
             return True
 
         # Check if user is a project manager for this project
@@ -543,7 +543,7 @@ class ProjectMemberDeleteView(LoginRequiredMixin, ProjectAccessMixin, DeleteView
         if member.user == user and project.created_by == user:
             return False
 
-        if user.is_admin or project.created_by == user:
+        if user.is_admin() or project.created_by == user:
             return True
 
         # Check if user is a project manager for this project
@@ -590,7 +590,7 @@ class ProjectMemberInviteView(LoginRequiredMixin, ProjectAccessMixin, TemplateVi
         user = self.request.user
         project = get_object_or_404(Project, pk=self.kwargs["project_id"])
 
-        if user.is_admin or project.created_by == user:
+        if user.is_admin() or project.created_by == user:
             return True
 
         # Check if user is a project manager for this project
@@ -668,7 +668,9 @@ class ProjectMemberApiView(LoginRequiredMixin, View):
                 project=project, user=request.user
             ).exists()
             if not (
-                request.user.is_admin or project.created_by == request.user or is_member
+                request.user.is_admin()
+                or project.created_by == request.user
+                or is_member
             ):
                 return JsonResponse({"error": "Access denied"}, status=403)
 
