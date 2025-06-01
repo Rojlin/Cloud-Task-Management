@@ -60,7 +60,7 @@
                         <td>
                             {% for member in members %}
                                 {% if member.user == project.created_by %}
-                                    <span class="badge {% if member.role == 'project_manager' %}badge-primary{% elif member.role == 'leader' %}badge-success{% else %}badge-secondary{% endif %}">
+                                    <span class="btn {% if member.role == 'project_manager' %}btn-primary{% elif member.role == 'leader' %}btn-success{% else %}btn-secondary{% endif %}">
                                         {{ member.get_role_display }}
                                     </span>
                                 {% endif %}
@@ -91,7 +91,7 @@
                             </td>
                             <td>{{ member.user.email }}</td>
                             <td>
-                                <span class="badge {% if member.role == 'project_manager' %}badge-primary{% elif member.role == 'leader' %}badge-success{% else %}badge-secondary{% endif %}">
+                                <span class="btn {% if member.role == 'project_manager' %}btn-primary{% elif member.role == 'leader' %}btn-success{% else %}btn-secondary{% endif %}">
                                     {{ member.get_role_display }}
                                 </span>
                             </td>
