@@ -204,7 +204,7 @@
                                 <td>
                                     <a href="{% url 'tasks:detail' task.id %}">{{ task.title }}</a>
                                     <div class="small">
-                                        <span class="badge {% if task.priority == 'urgent' %}badge-danger{% elif task.priority == 'high' %}badge-warning{% elif task.priority == 'medium' %}badge-primary{% else %}badge-info{% endif %}">
+                                        <span class="btn {% if task.priority == 'urgent' %}btn-danger{% elif task.priority == 'high' %}btn-warning{% elif task.priority == 'medium' %}btn-primary{% else %}btn-info{% endif %}">
                                             {{ task.get_priority_display }}
                                         </span>
                                     </div>
@@ -217,7 +217,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <span class="badge task-status-badge-{{ task.id }} {% if task.status == 'completed' %}badge-success{% elif task.status == 'in_progress' %}badge-primary{% elif task.status == 'review' %}badge-warning{% else %}badge-secondary{% endif %}">
+                                    <span class="btn task-status-badge-{{ task.id }} {% if task.status == 'completed' %}btn-success{% elif task.status == 'in_progress' %}btn-primary{% elif task.status == 'review' %}btn-warning{% else %}btn-secondary{% endif %}">
                                         {{ task.get_status_display }}
                                     </span>
                                 </td>
