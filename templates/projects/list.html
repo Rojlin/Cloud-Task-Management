@@ -185,12 +185,12 @@
                             <div class="text-muted small">{{ project.description|truncatechars:60 }}</div>
                         </td>
                         <td>
-                            <span class="badge {% if project.status == 'completed' %}badge-success{% elif project.status == 'in_progress' %}badge-primary{% elif project.status == 'on_hold' %}badge-warning{% elif project.status == 'cancelled' %}badge-danger{% else %}badge-secondary{% endif %}">
+                            <span class="btn {% if project.status == 'completed' %}btn-success{% elif project.status == 'in_progress' %}btn-primary{% elif project.status == 'on_hold' %}btn-warning{% elif project.status == 'cancelled' %}btn-danger{% else %}btn-secondary{% endif %}">
                                 {{ project.get_status_display }}
                             </span>
                         </td>
                         <td>
-                            <span class="badge {% if project.priority == 'urgent' %}badge-danger{% elif project.priority == 'high' %}badge-warning{% elif project.priority == 'medium' %}badge-primary{% else %}badge-info{% endif %}">
+                            <span class="btn {% if project.priority == 'urgent' %}btn-danger{% elif project.priority == 'high' %}btn-warning{% elif project.priority == 'medium' %}btn-primary{% else %}btn-info{% endif %}">
                                 {{ project.get_priority_display }}
                             </span>
                         </td>
